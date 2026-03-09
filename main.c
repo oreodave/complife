@@ -4,11 +4,24 @@
  * License: See end of file
  */
 
+#include <raylib.h>
 #include <stdio.h>
+
+#define WIDTH  800
+#define HEIGHT 600
 
 int main(void)
 {
-  puts("Hello, world!");
+  InitWindow(WIDTH, HEIGHT, "CompLife");
+  SetTargetFPS(60);
+  while (!WindowShouldClose())
+  {
+    BeginDrawing();
+    ClearBackground(BLACK);
+    DrawFPS(0, 0);
+    EndDrawing();
+  }
+  CloseWindow();
   return 0;
 }
 
