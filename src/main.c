@@ -17,12 +17,6 @@
 #include "program_iter.h"
 #include "simulation.h"
 
-#define WIDTH  800
-#define HEIGHT 600
-
-// Our grid will be of length sqrt(NUM_PROGRAMS).  This is the same as
-// 1LU<<(NUM_PROGRAMS_POW_2/2).
-static const size_t GRID_WIDTH = 1LU << (NUM_PROGRAMS_POW_2 / 2);
 static const size_t CELL_WIDTH = WIDTH / GRID_WIDTH;
 
 static const char *VALID_OPS = "<>{}-+.,[]";

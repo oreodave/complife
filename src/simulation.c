@@ -21,33 +21,71 @@ bool any_threads_using(const struct ThreadState *const states, u64 n)
   return false;
 }
 
+void get_neighbours(u64 index, u64 ret[4])
+{
+  memset(ret, 0xFF, sizeof(*ret) * 4);
+  u64 x   = index / GRID_WIDTH;
+  u64 y   = index % GRID_WIDTH;
+  u64 ptr = 0;
+  if (x > 0)
+  {
+    ret[ptr++] = ((x - 1) * GRID_WIDTH) + y;
+  }
+  if (x < GRID_WIDTH - 1)
+  {
+    ret[ptr++] = ((x + 1) * GRID_WIDTH) + y;
+  }
+  if (y > 0)
+  {
+    ret[ptr++] = (x * GRID_WIDTH) + (y + 1);
+  }
+  if (y < GRID_WIDTH - 1)
+  {
+    ret[ptr++] = (x * GRID_WIDTH) + (y - 1);
+  }
+}
+
 void thread_pick(struct ThreadState *state)
 {
   struct Simulation *sim = state->sim;
+  u64 p1 = 0, p2 = 0;
   while (true)
   {
-    u64 p1 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
+    p1 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
     if (any_threads_using(sim->states, p1))
     {
       continue;
     }
-    // TODO: Instead of picking a RANDOM p2, why not choose a neighbour of p1?
-    // This way programs that are likely to replicate are replicating closer to
-    // themselves, and thus have a higher chance of further replication.
-    u64 p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
-    while (p1 * 8 <= ((p2 * 8) + SIZEOF_PROGRAM) &&
-           p2 * 8 <= ((p1 * 8) + SIZEOF_PROGRAM))
+    u64 neighbours[4];
+    get_neighbours(p1, neighbours);
+
+    u64 p2 = -1;
+    for (u64 i = 0; i < 4; ++i)
+    {
+      if (neighbours[i] == UINT64_MAX ||
+          any_threads_using(sim->states, neighbours[i]))
+        continue;
+      p2 = neighbours[i];
+      break;
+    }
+
+    if (p2 < GRID_WIDTH)
+    {
+      break;
+    }
+
+    // Otherwise pick randomly.
+    p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
+    while ((p1 * 8 <= ((p2 * 8) + SIZEOF_PROGRAM) &&
+            p2 * 8 <= ((p1 * 8) + SIZEOF_PROGRAM)) ||
+           any_threads_using(sim->states, p2))
     {
       p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
     }
-    if (any_threads_using(sim->states, p2))
-    {
-      continue;
-    }
-    state->p1 = p1;
-    state->p2 = p2;
     break;
   }
+  state->p1 = p1;
+  state->p2 = p2;
 }
 
 const struct timespec THREAD_DEFAULT_SLEEP = {.tv_sec = 1};

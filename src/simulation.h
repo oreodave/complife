@@ -12,12 +12,6 @@
 #include <stdatomic.h>
 #include <threads.h>
 
-#define NUM_PROGRAMS_POW_2 10
-#define NUM_PROGRAMS       (1LU << NUM_PROGRAMS_POW_2)
-#define SIMULATION_SIZE    (SIZEOF_PROGRAM * NUM_PROGRAMS)
-
-#define THREAD_POOL 8
-
 struct ThreadState
 {
   u64 p1, p2;
