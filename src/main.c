@@ -15,54 +15,10 @@
 #include "vec.h"
 
 #include "program_iter.h"
-
-struct ProgramConcat
-{
-  sv_t A, B;
-  u8 tape[SIZEOF_PROGRAM * 2];
-};
+#include "simulation.h"
 
 #define WIDTH  800
 #define HEIGHT 600
-
-#define NUM_PROGRAMS_POW_2 10
-#define NUM_PROGRAMS       (1LU << NUM_PROGRAMS_POW_2)
-#define SIMULATION_SIZE    (SIZEOF_PROGRAM * NUM_PROGRAMS)
-struct Simulation
-{
-  char buffer[SIMULATION_SIZE];
-  u64 p1, p2;
-};
-
-void simulation_init(struct Simulation *sim)
-{
-  for (u64 i = 0; i < SIMULATION_SIZE / sizeof(u16); ++i)
-  {
-    ((u16 *)(sim->buffer))[i] = rand() % UINT16_MAX;
-  }
-}
-
-void simulation_pick(struct Simulation *sim)
-{
-  sim->p1 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
-  sim->p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
-  while (sim->p1 * 8 <= ((sim->p2 * 8) + SIZEOF_PROGRAM) &&
-         sim->p2 * 8 <= ((sim->p1 * 8) + SIZEOF_PROGRAM))
-  {
-    sim->p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
-  }
-}
-
-void simulation_update(struct Simulation *sim)
-{
-  sv_t a = SV(sim->buffer + (sim->p1 * SIZEOF_PROGRAM), 64);
-  sv_t b = SV(sim->buffer + (sim->p2 * SIZEOF_PROGRAM), 64);
-
-  struct ProgramConcat prog_concat = {0};
-  program_concat(&prog_concat, a, b);
-  program_execute(&prog_concat);
-  program_split(&prog_concat);
-}
 
 Color simulation_cell_color(const u8 *program)
 {
@@ -160,7 +116,6 @@ int main(void)
   SetTargetFPS(60);
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
-    simulation_pick(&sim);
     simulation_update(&sim);
     BeginDrawing();
     ClearBackground(BLACK);
