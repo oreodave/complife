@@ -9,21 +9,35 @@
 #define SIMULATION_H
 
 #include "program_iter.h"
+#include <stdatomic.h>
+#include <threads.h>
 
 #define NUM_PROGRAMS_POW_2 10
 #define NUM_PROGRAMS       (1LU << NUM_PROGRAMS_POW_2)
 #define SIMULATION_SIZE    (SIZEOF_PROGRAM * NUM_PROGRAMS)
+
+#define THREAD_POOL 8
+
+struct ThreadState
+{
+  u64 p1, p2;
+  void *sim;
+};
 
 // Simulation is simply a massive tape.  We pick two 64 byte portions of this
 // buffer for our update procedure, which is based on program_iter.
 struct Simulation
 {
   char buffer[SIMULATION_SIZE];
-  u64 p1, p2;
+
+  bool paused, stopped;
+  mtx_t mutex;
+  thrd_t threads[THREAD_POOL];
+  struct ThreadState states[THREAD_POOL];
 };
 
-void simulation_init(struct Simulation *sim);
-void simulation_update(struct Simulation *sim);
+void simulation_start(struct Simulation *sim);
+void simulation_stop(struct Simulation *sim);
 
 #endif
 

@@ -94,18 +94,19 @@ void simulation_draw(struct Simulation *sim)
     DrawRectangle(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
                   color);
 
-    if (i == sim->p1)
-    {
-      DrawRectangleLines(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
-                         BLUE);
-    }
-    if (i == sim->p1)
-    {
-      DrawRectangleLines(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
-                         RED);
-    }
-
     sv = sv_chop_left(sv, 64);
+  }
+
+  for (u64 i = 0; i < THREAD_POOL; ++i)
+  {
+    u64 p1 = sim->states[i].p1;
+    u64 p2 = sim->states[i].p2;
+    DrawRectangleLines((p1 / GRID_WIDTH) * CELL_WIDTH,
+                       (p1 % GRID_WIDTH) * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
+                       BLUE);
+    DrawRectangleLines((p2 / GRID_WIDTH) * CELL_WIDTH,
+                       (p2 % GRID_WIDTH) * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
+                       RED);
   }
 }
 
@@ -114,16 +115,15 @@ int main(void)
   srand(time(NULL));
 
   struct Simulation sim = {0};
-  simulation_init(&sim);
+  simulation_start(&sim);
 
-  bool paused = false;
   InitWindow(WIDTH, HEIGHT, "CompLife");
   SetTargetFPS(60);
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
     if (IsKeyPressed(KEY_SPACE))
     {
-      paused = !paused;
+      sim.paused = !sim.paused;
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
@@ -143,15 +143,12 @@ int main(void)
       }
       printf("\n");
     }
-    if (!paused)
-    {
-      simulation_update(&sim);
-    }
     BeginDrawing();
     ClearBackground(BLACK);
     simulation_draw(&sim);
     EndDrawing();
   }
+  simulation_stop(&sim);
   CloseWindow();
   return 0;
 }
