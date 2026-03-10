@@ -31,6 +31,9 @@ void thread_pick(struct ThreadState *state)
     {
       continue;
     }
+    // TODO: Instead of picking a RANDOM p2, why not choose a neighbour of p1?
+    // This way programs that are likely to replicate are replicating closer to
+    // themselves, and thus have a higher chance of further replication.
     u64 p2 = rand() % (SIMULATION_SIZE / SIZEOF_PROGRAM);
     while (p1 * 8 <= ((p2 * 8) + SIZEOF_PROGRAM) &&
            p2 * 8 <= ((p1 * 8) + SIZEOF_PROGRAM))
