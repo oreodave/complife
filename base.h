@@ -1,15 +1,11 @@
-/* prick_aliases.h:
- * Created: 2025-04-09
+/* base.h: Basic definitions
+ * Created: 2026-03-10
  * Author: Aryadev Chavali
  * License: See end of file
- * Commentary:
-
- This library defines some useful aliases for common types.  These are mostly
- handpicked, and aren't necessary.
  */
 
-#ifndef PRICK_ALIASES_H
-#define PRICK_ALIASES_H
+#ifndef BASE_H
+#define BASE_H
 
 #include <assert.h>
 #include <stdint.h>
@@ -29,16 +25,22 @@ static_assert(sizeof(double) == 8, "f64 requires 8 byte doubles");
 typedef float f32;
 typedef double f64;
 
+#define MAX(A, B)      ((A) > (B) ? (A) : (B))
+#define SAFE_SUB(A, B) ((A) < (B) ? 0 : (A) - (B))
+// 64 byte programs
+#define SIZEOF_PROGRAM (1LU << 6)
+
 #endif
 
-/* Copyright (C) 2025 Aryadev Chavali
+/* Copyright (C) 2026 Aryadev Chavali
 
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the Unlicense for details.
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License Version 2 for
+ * details.
 
- * You may distribute and modify this code under the terms of the Unlicense,
- * which you should have received a copy of along with this program.  If not,
- * please go to <https://unlicense.org/>.
+ * You may distribute and modify this code under the terms of the GNU General
+ * Public License Version 2, which you should have received a copy of along with
+ * this program.  If not, please go to <https://www.gnu.org/licenses/>.
 
  */

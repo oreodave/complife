@@ -10,17 +10,10 @@
 #include <string.h>
 #include <time.h>
 
-#include "./lib/prick_aliases.h"
+#include "base.h"
+#include "sv.h"
+#include "vec.h"
 
-#define SV_IMPL
-#include "./lib/prick_sv.h"
-
-#define VEC_IMPL
-#include "./lib/prick_vec.h"
-
-#define SAFE_SUB(A, B) ((A) < (B) ? 0 : (A) - (B))
-
-#define SIZEOF_PROGRAM (1LU << 6)
 struct ProgramConcat
 {
   sv_t A, B;

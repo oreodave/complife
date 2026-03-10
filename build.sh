@@ -2,7 +2,7 @@
 
 CFLAGS="-Wall -Wextra -Wpedantic -Wswitch-enum -Werror -std=c23 -ggdb"
 LDFLAGS="-lm -lraylib"
-SRC="main.c"
+SRC="sv.c vec.c main.c"
 OUT="main.out"
 
 set -xe
