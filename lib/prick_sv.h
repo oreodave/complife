@@ -1,12 +1,12 @@
-/* prick_sv.h: String Views.
+/* sv.h: String Views.
  * Created: 2026-03-01
  * Author: Aryadev Chavali
  * License: See end of file
  * Commentary:
 
  To utilise this library, please put:
-    #define PRICK_SV_IMPL
-    #include "prick_sv.h"
+    #define SV_IMPL
+    #include "sv.h"
  in one of your code units.
 
  This is a simple read-only string view library.  It defines some extremely
@@ -14,8 +14,8 @@
  require allocation.
  */
 
-#ifndef PRICK_SV_H
-#define PRICK_SV_H
+#ifndef SV_H
+#define SV_H
 
 #include <stdint.h>
 
@@ -23,79 +23,78 @@ typedef struct
 {
   uint64_t size;
   const char *data;
-} prick_sv_t;
+} sv_t;
 
-#define PRICK_SV(DATA, SIZE) ((prick_sv_t){.data = (DATA), .size = (SIZE)})
-#define PRICK_SV_AUTO(DATA) \
-  ((prick_sv_t){.data = (void *)(DATA), .size = sizeof(DATA) - 1})
+#define SV(DATA, SIZE) ((sv_t){.data = (DATA), .size = (SIZE)})
+#define SV_AUTO(DATA)  ((sv_t){.data = (void *)(DATA), .size = sizeof(DATA) - 1})
 
 // Pretty printers
-#define PRICK_SV_FMT(SV) (int)(SV).size, (SV).data
-#define PR_PRICK_SV      "%.*s"
+#define SV_FMT(SV) (int)(SV).size, (SV).data
+#define PR_SV      "%.*s"
 
-prick_sv_t prick_sv_chop_left(prick_sv_t, uint64_t size);
-prick_sv_t prick_sv_chop_right(prick_sv_t, uint64_t size);
-prick_sv_t prick_sv_truncate(prick_sv_t, uint64_t newsize);
-prick_sv_t prick_sv_substr(prick_sv_t, uint64_t position, uint64_t size);
+sv_t sv_chop_left(sv_t, uint64_t size);
+sv_t sv_chop_right(sv_t, uint64_t size);
+sv_t sv_truncate(sv_t, uint64_t newsize);
+sv_t sv_substr(sv_t, uint64_t position, uint64_t size);
 
-prick_sv_t prick_sv_till(prick_sv_t, const char *reject);
-prick_sv_t prick_sv_while(prick_sv_t, const char *accept);
+sv_t sv_till(sv_t, const char *reject);
+sv_t sv_while(sv_t, const char *accept);
 
-#ifdef PRICK_SV_IMPL
+#ifdef SV_IMPL
 #include <stddef.h>
 #include <string.h>
 
-prick_sv_t prick_sv_chop_left(prick_sv_t sv, uint64_t size)
+sv_t sv_chop_left(sv_t sv, uint64_t size)
 {
   if (sv.size <= size)
-    return PRICK_SV(NULL, 0);
-  return PRICK_SV(sv.data + size, sv.size - size);
+    return SV(NULL, 0);
+  return SV(sv.data + size, sv.size - size);
 }
 
-prick_sv_t prick_sv_chop_right(prick_sv_t sv, uint64_t size)
+sv_t sv_chop_right(sv_t sv, uint64_t size)
 {
   if (sv.size <= size)
-    return PRICK_SV(NULL, 0);
-  return PRICK_SV(sv.data, sv.size - size);
+    return SV(NULL, 0);
+  return SV(sv.data, sv.size - size);
 }
 
-prick_sv_t prick_sv_truncate(prick_sv_t sv, uint64_t newsize)
+sv_t sv_truncate(sv_t sv, uint64_t newsize)
 {
   if (newsize > sv.size)
-    return PRICK_SV(NULL, 0);
-  return PRICK_SV(sv.data, newsize);
+    return SV(NULL, 0);
+  return SV(sv.data, newsize);
 }
 
-prick_sv_t prick_sv_substr(prick_sv_t sv, uint64_t position, uint64_t size)
+sv_t sv_substr(sv_t sv, uint64_t position, uint64_t size)
 {
-  prick_sv_t result = prick_sv_truncate(prick_sv_chop_left(sv, position), size);
+  sv_t result = sv_truncate(sv_chop_left(sv, position), size);
   return result;
 }
 
-prick_sv_t prick_sv_till(prick_sv_t sv, const char *reject)
+sv_t sv_till(sv_t sv, const char *reject)
 {
   if (sv.size == 0 || !sv.data)
-    return PRICK_SV(NULL, 0);
+    return SV(NULL, 0);
 
   uint64_t offset;
   for (offset = 0; offset < sv.size && strchr(reject, sv.data[offset]) == NULL;
        ++offset)
     continue;
 
-  return prick_sv_truncate(sv, offset);
+  return sv_truncate(sv, offset);
 }
 
-prick_sv_t prick_sv_while(prick_sv_t sv, const char *accept)
+sv_t sv_while(sv_t sv, const char *accept)
 {
   if (sv.size == 0 || !sv.data)
-    return PRICK_SV(NULL, 0);
+    return SV(NULL, 0);
 
   uint64_t offset;
   for (offset = 0; offset < sv.size && strchr(accept, sv.data[offset]) != NULL;
        ++offset)
     continue;
 
-  return prick_sv_truncate(sv, offset);
+  return sv_truncate(sv, offset);
 }
 
 #endif
