@@ -20,6 +20,13 @@
 #define WIDTH  800
 #define HEIGHT 600
 
+// Our grid will be of length sqrt(NUM_PROGRAMS).  This is the same as
+// 1LU<<(NUM_PROGRAMS_POW_2/2).
+static const size_t GRID_WIDTH = 1LU << (NUM_PROGRAMS_POW_2 / 2);
+static const size_t CELL_WIDTH = WIDTH / GRID_WIDTH;
+
+static const char *VALID_OPS = "<>{}-+.,[]";
+
 Color simulation_cell_color(const u8 *program)
 {
   // How do we compute a "colour" for a program?  I say we count all the valid
@@ -37,8 +44,6 @@ Color simulation_cell_color(const u8 *program)
       ['['] = ColorNormalize(ColorFromHSV(0.737, 0.741, 0.133)),
       [']'] = ColorNormalize(ColorFromHSV(0.090, 0.745, 0.812)),
   };
-
-  static const char *VALID_OPS = "<>{}-+.,[]";
 
   u64 counter[] = {
       ['<'] = 0, ['>'] = 0, ['{'] = 0, ['}'] = 0, ['-'] = 0,
@@ -77,28 +82,27 @@ Color simulation_cell_color(const u8 *program)
 
 void simulation_draw(struct Simulation *sim)
 {
-  // Our grid will be of lengths sqrt(NUM_PROGRAMS) == 1 <<
-  // (NUM_PROGRAMS_POW_2/2).
-  const size_t GRID_WIDTH = 1LU << (NUM_PROGRAMS_POW_2 / 2);
-  const size_t CELL_WIDTH = WIDTH / GRID_WIDTH;
-
   sv_t sv = SV(sim->buffer, SIMULATION_SIZE);
 
   for (u64 i = 0; i < SIMULATION_SIZE / SIZEOF_PROGRAM; ++i)
   {
     sv_t program = sv_truncate(sv, SIZEOF_PROGRAM);
-
-    Color color = simulation_cell_color((const u8 *)program.data);
+    Color color  = simulation_cell_color((const u8 *)program.data);
 
     u64 x = i / GRID_WIDTH;
     u64 y = i % GRID_WIDTH;
     DrawRectangle(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
                   color);
 
-    if (i == sim->p1 || i == sim->p2)
+    if (i == sim->p1)
     {
       DrawRectangleLines(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
                          BLUE);
+    }
+    if (i == sim->p1)
+    {
+      DrawRectangleLines(x * CELL_WIDTH, y * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH,
+                         RED);
     }
 
     sv = sv_chop_left(sv, 64);
@@ -112,11 +116,37 @@ int main(void)
   struct Simulation sim = {0};
   simulation_init(&sim);
 
+  bool paused = false;
   InitWindow(WIDTH, HEIGHT, "CompLife");
   SetTargetFPS(60);
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
-    simulation_update(&sim);
+    if (IsKeyPressed(KEY_SPACE))
+    {
+      paused = !paused;
+    }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+      Vector2 pos = GetMousePosition();
+      u64 x       = (pos.x / WIDTH) * GRID_WIDTH;
+      u64 y       = (pos.y / WIDTH) * GRID_WIDTH;
+      printf("(%lu,%lu)=", x, y);
+      sv_t sv = sv_truncate(
+          sv_chop_left(SV(sim.buffer, SIMULATION_SIZE), (x * GRID_WIDTH) + y),
+          64);
+      for (u64 i = 0; i < sv.size; ++i)
+      {
+        if (strchr(VALID_OPS, sv.data[i]))
+        {
+          printf("%c", sv.data[i]);
+        }
+      }
+      printf("\n");
+    }
+    if (!paused)
+    {
+      simulation_update(&sim);
+    }
     BeginDrawing();
     ClearBackground(BLACK);
     simulation_draw(&sim);
