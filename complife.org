@@ -1,0 +1,6 @@
+* TODO Restructure simulation
+Instead of going for one massive tape with "lines" being programs, go
+for 8x8 chunks.
+
+The idea is to draw each individual command in motion instead of the
+composite program.  The visualisation will look amazing.
