@@ -27,20 +27,10 @@ typedef double f64;
 
 #define MAX(A, B)      ((A) > (B) ? (A) : (B))
 #define SAFE_SUB(A, B) ((A) < (B) ? 0 : (A) - (B))
-// 64 byte programs
-#define SIZEOF_PROGRAM (1LU << 6)
-
-#define NUM_PROGRAMS_POW_2 17
-#define NUM_PROGRAMS       (1LU << NUM_PROGRAMS_POW_2)
-#define SIMULATION_SIZE    (SIZEOF_PROGRAM * NUM_PROGRAMS)
-#define THREAD_POOL        4
 
 // GUI stuff
 #define WIDTH  800
 #define HEIGHT 600
-// Our grid will be of length sqrt(NUM_PROGRAMS).  This is the same as
-// 1LU<<(NUM_PROGRAMS_POW_2/2).
-static const size_t GRID_WIDTH = 1LU << (NUM_PROGRAMS_POW_2 / 2);
 
 #endif
 

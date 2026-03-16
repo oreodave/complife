@@ -1,24 +1,27 @@
-/* program_iter.h: Program iteration procedure
+/* bf.h: Brainfuck implementation
  * Created: 2026-03-10
  * Author: Aryadev Chavali
  * License: See end of file
  */
 
-#ifndef PROGRAM_ITER_H
-#define PROGRAM_ITER_H
+#ifndef BF_H
+#define BF_H
 
 #include "base.h"
 #include "sv.h"
 
-// Result of concatenating two programs.  Maintains a concatenated tape of the
-// two programs fed for ease of use.
+typedef i8 bf_token;
+
+// All "programs" are 64 bytes.
+#define SIZEOF_PROGRAM 64
+
 struct ProgramConcat
 {
-  sv_t A, B;
-  u8 tape[SIZEOF_PROGRAM * 2];
+  bf_token *a, *b;
+  bf_token tape[SIZEOF_PROGRAM * 2];
 };
 
-void program_concat(struct ProgramConcat *, sv_t, sv_t);
+void program_concat(struct ProgramConcat *, bf_token *a, bf_token *b);
 void program_execute(struct ProgramConcat *);
 void program_split(struct ProgramConcat *);
 
