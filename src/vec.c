@@ -30,7 +30,7 @@ void vec_append_byte(vec_t *vec, uint8_t byte)
   ++vec->size;
 }
 
-void *vec_data(vec_t *vec)
+u8 *vec_data(vec_t *vec)
 {
   if (!vec)
     return NULL;
@@ -93,6 +93,34 @@ void vec_clone(vec_t *v2, vec_t *v1)
   if (!v1 || !v2)
     return;
   vec_append(v2, vec_data(v1), v1->size);
+}
+
+void *vec_pop(vec_t *vec, size_t member_size)
+{
+  if (vec->size < member_size)
+  {
+    return NULL;
+  }
+  vec->size -= member_size;
+  return vec_data(vec) + vec->size;
+}
+
+u64 vec_find(vec_t *vec, void *ptr, size_t ptrsize)
+{
+  if (vec->size < ptrsize)
+    return vec->size + 1;
+
+  u8 *base = vec_data(vec);
+  for (u64 i = 0; i < vec->size; i += ptrsize)
+  {
+    auto member = base + i;
+    if (!memcmp(member, ptr, ptrsize))
+    {
+      return i;
+    }
+  }
+
+  return vec->size + 1;
 }
 
 /* Copyright (C) 2026 Aryadev Chavali

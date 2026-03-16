@@ -31,11 +31,13 @@ static_assert(sizeof(vec_t) == 64, "Expected sizeof(vec_t) to be 64");
 
 void vec_append(vec_t *vec, const void *const ptr, uint64_t size);
 void vec_append_byte(vec_t *vec, uint8_t byte);
-void *vec_data(vec_t *vec);
+u8 *vec_data(vec_t *vec);
 void vec_ensure_capacity(vec_t *vec, uint64_t capacity);
 void vec_ensure_free(vec_t *vec, uint64_t size);
 void vec_free(vec_t *vec);
 void vec_clone(vec_t *v2, vec_t *v1);
+void *vec_pop(vec_t *vec, size_t member_size);
+u64 vec_find(vec_t *vec, void *ptr, size_t ptrsize);
 
 #define VEC_GET(VEC, INDEX, TYPE) (((TYPE *)vec_data(VEC))[INDEX])
 
