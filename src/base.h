@@ -32,8 +32,9 @@ typedef double f64;
 #define WIDTH  800
 #define HEIGHT 600
 
-// All "programs" are 64 bytes.
+// Simulation constants
 #define SIZEOF_PROGRAM 64
+#define NUM_PROGRAMS   64
 
 #endif
 

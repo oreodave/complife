@@ -1,36 +1,23 @@
-/* main.c: Entrypoint
- * Created: 2026-03-09
+/* simulation.h: Simulation
+ * Created: 2026-03-17
  * Author: Aryadev Chavali
  * License: See end of file
  */
 
-#include <raylib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include "base.h"
-#include "sv.h"
-#include "vec.h"
+#ifndef SIMULATION_H
+#define SIMULATION_H
 
 #include "bf.h"
 
-int main(void)
+typedef struct
 {
-  srand(time(NULL));
+  bf_token memory[NUM_PROGRAMS * SIZEOF_PROGRAM];
+} simulation_t;
 
-  InitWindow(WIDTH, HEIGHT, "CompLife");
-  SetTargetFPS(60);
-  for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
-  {
-    BeginDrawing();
-    ClearBackground(BLACK);
-    EndDrawing();
-  }
-  CloseWindow();
-  return 0;
-}
+void simulation_iterate(simulation_t *sim);
+void simulation_draw(simulation_t *sim);
+
+#endif
 
 /* Copyright (C) 2026 Aryadev Chavali
 
