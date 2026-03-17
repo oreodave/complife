@@ -32,6 +32,9 @@ typedef double f64;
 #define WIDTH  800
 #define HEIGHT 600
 
+// All "programs" are 64 bytes.
+#define SIZEOF_PROGRAM 64
+
 #endif
 
 /* Copyright (C) 2026 Aryadev Chavali

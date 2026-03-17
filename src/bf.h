@@ -12,9 +12,6 @@
 
 typedef i8 bf_token;
 
-// All "programs" are 64 bytes.
-#define SIZEOF_PROGRAM 64
-
 struct ProgramConcat
 {
   bf_token *a, *b;
