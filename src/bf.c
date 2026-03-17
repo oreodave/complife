@@ -27,10 +27,9 @@ struct MachineContext
   u64 total_iters;
 };
 
-// This function implements the jump-forward operator of BrainFuck `[`, given
-// the current state of the machine.  We maintain a `loop_stack` which allows us
-// to trivially implement the jump-back operator `]` - essentially heavy forward
-// investment.
+// Jump-forward operator of BrainFuck `[`.  We maintain a `loop_stack` which
+// allows us to trivially implement the jump-back operator `]` - essentially
+// heavy forward investment.
 void loop_begin(struct ProgramConcat *prg, struct MachineContext *ctx,
                 vec_t *loop_stack)
 {
@@ -72,6 +71,24 @@ void loop_begin(struct ProgramConcat *prg, struct MachineContext *ctx,
   {
     // NOTE: as per paper, terminate.
     ctx->ip = sizeof(prg->tape);
+  }
+}
+
+void loop_end(struct ProgramConcat *prg, struct MachineContext *ctx,
+              vec_t *loop_stack)
+{
+  if (!prg->tape[ctx->head0])
+  {
+    ++ctx->ip;
+  }
+  else if (loop_stack->size < sizeof(u64))
+  {
+    // NOTE: as per paper, terminate.
+    ctx->ip = sizeof(prg->tape);
+  }
+  else
+  {
+    ctx->ip = *(u64 *)vec_pop(loop_stack, sizeof(ctx->ip));
   }
 }
 
@@ -120,28 +137,11 @@ void program_execute(struct ProgramConcat *prg)
       ++ctx.ip;
       break;
     case '[':
-    {
       loop_begin(prg, &ctx, &loop_stack);
       break;
-    }
     case ']':
-    {
-      if (!prg->tape[ctx.head0])
-      {
-        ++ctx.ip;
-        continue;
-      }
-      else if (loop_stack.size < sizeof(u64))
-      {
-        // NOTE: as per paper, terminate.
-        ctx.ip = sizeof(prg->tape);
-      }
-      else
-      {
-        ctx.ip = *(u64 *)vec_pop(&loop_stack, sizeof(ctx.ip));
-      }
+      loop_end(prg, &ctx, &loop_stack);
       break;
-    }
     default:
       ++ctx.ip;
       break;
