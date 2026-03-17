@@ -19,22 +19,25 @@ void program_concat(struct ProgramConcat *ret, bf_token *a, bf_token *b)
   memcpy(ret->tape + SIZEOF_PROGRAM, b, SIZEOF_PROGRAM);
 }
 
+// Represents the current execution context of the BrainFuck VM implementation.
+// Used internally only, so its defined here.
 struct MachineContext
 {
   u64 ip, head0, head1;
   u64 total_iters;
 };
 
-// This function implements the jump-forward, given the current state of the
-// machine.  The main thing to concern us here is setting up the cond_stack
-// correctly.
+// This function implements the jump-forward operator of BrainFuck `[`, given
+// the current state of the machine.  We maintain a `loop_stack` which allows us
+// to trivially implement the jump-back operator `]` - essentially heavy forward
+// investment.
 void loop_begin(struct ProgramConcat *prg, struct MachineContext *ctx,
-                vec_t *cond_stack)
+                vec_t *loop_stack)
 {
-  // Add to cond_stack if not already present.
-  if (vec_find(cond_stack, &ctx->ip, sizeof(ctx->ip)) > cond_stack->size)
+  // Add to loop_stack if not already present.
+  if (vec_find(loop_stack, &ctx->ip, sizeof(ctx->ip)) > loop_stack->size)
   {
-    vec_append(cond_stack, &ctx->ip, sizeof(ctx->ip));
+    vec_append(loop_stack, &ctx->ip, sizeof(ctx->ip));
   }
 
   // If tape at head0 is nonzero, then go to the next instruction.
@@ -74,8 +77,8 @@ void loop_begin(struct ProgramConcat *prg, struct MachineContext *ctx,
 
 void program_execute(struct ProgramConcat *prg)
 {
-  vec_t cond_stack = {0};
-  vec_ensure_capacity(&cond_stack, sizeof(prg->tape) * sizeof(u64));
+  vec_t loop_stack = {0};
+  vec_ensure_capacity(&loop_stack, sizeof(prg->tape) * sizeof(u64));
 
   for (struct MachineContext ctx = {0};
        ctx.ip < sizeof(prg->tape) && ctx.total_iters < (1LU << 13);
@@ -118,7 +121,7 @@ void program_execute(struct ProgramConcat *prg)
       break;
     case '[':
     {
-      loop_begin(prg, &ctx, &cond_stack);
+      loop_begin(prg, &ctx, &loop_stack);
       break;
     }
     case ']':
@@ -128,14 +131,14 @@ void program_execute(struct ProgramConcat *prg)
         ++ctx.ip;
         continue;
       }
-      else if (cond_stack.size < sizeof(u64))
+      else if (loop_stack.size < sizeof(u64))
       {
         // NOTE: as per paper, terminate.
         ctx.ip = sizeof(prg->tape);
       }
       else
       {
-        ctx.ip = *(u64 *)vec_pop(&cond_stack, sizeof(ctx.ip));
+        ctx.ip = *(u64 *)vec_pop(&loop_stack, sizeof(ctx.ip));
       }
       break;
     }
@@ -145,7 +148,7 @@ void program_execute(struct ProgramConcat *prg)
     }
   }
 
-  vec_free(&cond_stack);
+  vec_free(&loop_stack);
 }
 
 void program_split(struct ProgramConcat *prg)
