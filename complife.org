@@ -4,3 +4,11 @@ for 8x8 chunks.
 
 The idea is to draw each individual command in motion instead of the
 composite program.  The visualisation will look amazing.
+** DONE Refactor brainfuck interpreter
+The "catalytic process" (take two programs, concatenate them, execute
+the program, split them back) is now completely standalone.  The only
+assertions it makes about the input programs is that they are
+contiguous.  Essentially the same as our previous implementation.
+
+Now we just need to do the hard bit!
+** TODO Refactor simulation
