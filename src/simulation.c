@@ -23,9 +23,8 @@ static const Color possible_colors[] = {
     ['\0'] = {0x0, 0x0, 0x0, 0xff},
 };
 
-void simulation_iterate(simulation_t *sim)
+void simulation_mutate(simulation_t *sim)
 {
-// Mutate cells if an option
 #if MUTATION_CHANCE
   for (u64 i = 0; i < SIMULATION_SIZE; ++i)
   {
@@ -35,7 +34,10 @@ void simulation_iterate(simulation_t *sim)
     }
   }
 #endif
+}
 
+void simulation_iterate(simulation_t *sim)
+{
   u64 a = 0, b = 0;
   while (a == b)
   {

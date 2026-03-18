@@ -16,6 +16,7 @@ typedef struct
   bf_token memory[SIMULATION_SIZE];
 } simulation_t;
 
+void simulation_mutate(simulation_t *sim);
 void simulation_iterate(simulation_t *sim);
 void simulation_draw(simulation_t *sim);
 
