@@ -90,7 +90,6 @@ int main(void)
     BeginDrawing();
     ClearBackground(BLACK);
     simulation_draw(&sim);
-    DrawFPS(0, 0);
     EndDrawing();
   }
   state_iterator.done = true;

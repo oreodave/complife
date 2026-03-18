@@ -33,6 +33,8 @@ void simulation_mutate(simulation_t *sim)
       sim->memory[i] += (rand() % MUTATION_OFFSET) - (MUTATION_OFFSET / 2);
     }
   }
+#else
+  (void)sim;
 #endif
 }
 

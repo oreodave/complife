@@ -30,17 +30,17 @@ typedef double f64;
 #define SAFE_SUB(A, B) ((A) < (B) ? 0 : (A) - (B))
 
 // GUI stuff
-#define WIDTH  800
-#define HEIGHT 800
+#define WIDTH  1024
+#define HEIGHT 1024
 
 // Simulation constants
-#define SIZEOF_PROGRAM_POW_2 8
+#define SIZEOF_PROGRAM_POW_2 4
 #define SIZEOF_PROGRAM       (1 << SIZEOF_PROGRAM_POW_2)
-#define NUM_PROGRAMS_POW_2   8
+#define NUM_PROGRAMS_POW_2   10
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
 
-#define MUTATION_CHANCE 10000
-#define MUTATION_OFFSET 3
+#define MUTATION_CHANCE 5000
+#define MUTATION_OFFSET 10
 
 #endif
 
