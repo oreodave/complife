@@ -109,27 +109,37 @@ int main(void)
     }
     if (IsKeyDown(KEY_W))
     {
-      camera.offset.y += MOVEMENT_SPEED;
+      camera.target.y -= MOVEMENT_SPEED;
     }
     if (IsKeyDown(KEY_S))
     {
-      camera.offset.y -= MOVEMENT_SPEED;
+      camera.target.y += MOVEMENT_SPEED;
     }
     if (IsKeyDown(KEY_A))
     {
-      camera.offset.x += MOVEMENT_SPEED;
+      camera.target.x -= MOVEMENT_SPEED;
     }
     if (IsKeyDown(KEY_D))
     {
-      camera.offset.x -= MOVEMENT_SPEED;
+      camera.target.x += MOVEMENT_SPEED;
+    }
+    if (IsKeyPressed(KEY_Z))
+    {
+      camera.zoom += ZOOM_SPEED;
+      camera.zoom = Clamp(camera.zoom, 1.0, ZOOM_MAX);
+    }
+    if (IsKeyPressed(KEY_X))
+    {
+      camera.zoom -= ZOOM_SPEED;
+      camera.zoom = Clamp(camera.zoom, 1.0, ZOOM_MAX);
     }
     if (IsKeyPressed(KEY_PERIOD))
     {
       camera.offset = (Vector2){0};
+      camera.target = (Vector2){0};
       camera.zoom   = 1.0f;
     }
-    camera.zoom += GetMouseWheelMove() * ZOOM_SPEED;
-    camera.zoom = Clamp(camera.zoom, 1.0, ZOOM_MAX);
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && camera.zoom == 1.0f &&
         camera.offset.x == 0 && camera.offset.y == 0)
     {
@@ -142,7 +152,7 @@ int main(void)
       printf("(%d, %d): ", (i32)position.x, (i32)position.y);
       for (u64 i = 0; i < SIZEOF_PROGRAM; ++i)
       {
-        if (strchr(VALID_OPS, base[i]))
+        if (base[i] && strchr(VALID_OPS, base[i]))
         {
           printf("%c ", base[i]);
         }
