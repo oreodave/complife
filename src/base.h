@@ -34,13 +34,13 @@ typedef double f64;
 #define HEIGHT 1024
 
 // Simulation constants
-#define SIZEOF_PROGRAM_POW_2 4
+#define SIZEOF_PROGRAM_POW_2 6
 #define SIZEOF_PROGRAM       (1 << SIZEOF_PROGRAM_POW_2)
 #define NUM_PROGRAMS_POW_2   10
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
 
 #define MUTATION_CHANCE 5000
-#define MUTATION_OFFSET 10
+#define MUTATION_OFFSET 1
 
 #endif
 
