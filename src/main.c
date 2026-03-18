@@ -21,7 +21,7 @@ void simulation_soup(simulation_t *sim)
 {
   for (size_t i = 0; i < sizeof(sim->memory); ++i)
   {
-    sim->memory[i] = (rand() % 82) + 43;
+    sim->memory[i] = rand() % 255;
   }
 }
 
