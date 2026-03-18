@@ -15,17 +15,30 @@
 #include "vec.h"
 
 #include "bf.h"
+#include "simulation.h"
+
+void simulation_soup(simulation_t *sim)
+{
+  for (size_t i = 0; i < sizeof(sim->memory); ++i)
+  {
+    sim->memory[i] = (rand() % 82) + 43;
+  }
+}
 
 int main(void)
 {
+  simulation_t sim = {0};
+  simulation_soup(&sim);
   srand(time(NULL));
 
   InitWindow(WIDTH, HEIGHT, "CompLife");
   SetTargetFPS(60);
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
+    simulation_iterate(&sim);
     BeginDrawing();
     ClearBackground(BLACK);
+    simulation_draw(&sim);
     EndDrawing();
   }
   CloseWindow();
