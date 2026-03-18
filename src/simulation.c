@@ -12,22 +12,12 @@
 
 #include "simulation.h"
 
-static char *VALID_OPS = "<>{}-+.,[]";
-
-static const Color possible_colors[] = {
-    ['<'] = {230, 25, 75, 255},  ['>'] = {60, 180, 75, 255},
-    ['{'] = {255, 225, 25, 255}, ['}'] = {0, 130, 200, 255},
-    ['-'] = {245, 130, 48, 255}, ['+'] = {145, 30, 180, 255},
-    ['.'] = {70, 240, 240, 255}, [','] = {240, 50, 230, 255},
-    ['['] = {210, 245, 60, 255}, [']'] = {250, 190, 212, 255},
-    ['\0'] = {0, 0, 0, 255},
-};
-
 void simulation_mutate(simulation_t *sim)
 {
 #if MUTATION_CHANCE
   for (u64 i = 0; i < SIMULATION_SIZE; ++i)
   {
+    // Has probability of 1 / MUTATION_CHANCE.
     if ((rand() % MUTATION_CHANCE) == (MUTATION_CHANCE - 1))
     {
       sim->memory[i] = rand() % 255;
@@ -39,6 +29,72 @@ void simulation_mutate(simulation_t *sim)
 }
 
 // Strategy 1: Pick two random cells
+void simulation_pick_rng_pair(u64 *a, u64 *b);
+// Strategy 2: Pick a random cell, then iterate on all neighbours
+void simulation_pick_rng_neighbour(u64 *a, u64 *b);
+
+static struct ProgramConcat *a_b_concat = NULL;
+void simulation_iterate(simulation_t *sim)
+{
+  // Pick a pair to react
+  u64 a = 0, b = 0;
+  simulation_pick_rng_neighbour(&a, &b);
+
+  // Construct our concatenation object if not done already
+  if (!a_b_concat)
+  {
+    a_b_concat = calloc(1, sizeof(*a_b_concat));
+  }
+  memset(a_b_concat, 0, sizeof(*a_b_concat));
+
+  // Reaction: Concat, execute, split.
+  program_concat(a_b_concat, sim->memory + (a * SIZEOF_PROGRAM),
+                 sim->memory + (b * SIZEOF_PROGRAM));
+  program_execute(a_b_concat);
+  program_split(a_b_concat);
+}
+
+Color simulation_cell_color(const bf_token cell);
+void simulation_draw(simulation_t *sim)
+{
+  for (size_t i = 0; i < NUM_PROGRAMS; ++i)
+  {
+    // Each program is a contiguous block of SIZEOF_PROGRAM bytes in the
+    // simulation memory.
+    const bf_token *base = sim->memory + (i * SIZEOF_PROGRAM);
+
+    // Compute the coordinates in the simulation square for this program, in
+    // cells.
+    u64 s_x = (i % SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
+    u64 s_y = (i / SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
+
+    for (u64 j = 0; j < SIZEOF_PROGRAM; ++j)
+    {
+      // Compute the position of this cell in the simulation sphere.
+      u64 p_x = j % PROGRAM_ROW_SIZE;
+      u64 p_y = j / PROGRAM_ROW_SIZE;
+      p_x += s_x;
+      p_y += s_y;
+
+      Color color = simulation_cell_color(base[j]);
+
+      DrawRectangleV((Vector2){CELL_WIDTH * p_x, CELL_HEIGHT * p_y},
+                     (Vector2){CELL_WIDTH, CELL_HEIGHT}, color);
+    }
+
+#if DRAW_PROGRAM_OUTLINE
+    DrawRectangleLinesEx(
+        (Rectangle){
+            .x      = s_x * CELL_WIDTH,
+            .y      = s_y * CELL_HEIGHT,
+            .width  = CELL_WIDTH * PROGRAM_ROW_SIZE,
+            .height = CELL_HEIGHT * PROGRAM_ROW_SIZE,
+        },
+        CELL_WIDTH / PROGRAM_ROW_SIZE, DARKGRAY);
+#endif
+  }
+}
+
 void simulation_pick_rng_pair(u64 *a, u64 *b)
 {
   while (*a == *b)
@@ -48,8 +104,6 @@ void simulation_pick_rng_pair(u64 *a, u64 *b)
   }
 }
 
-// Strategy 2: Pick a random cell, then iterate on all neighbours
-// Perform the reaction
 void simulation_pick_rng_neighbour(u64 *a, u64 *b)
 {
   *a      = rand() % NUM_PROGRAMS;
@@ -101,68 +155,19 @@ void simulation_pick_rng_neighbour(u64 *a, u64 *b)
   *b = neighbours[rand() % size];
 }
 
-static struct ProgramConcat *a_b_concat = NULL;
-void simulation_iterate(simulation_t *sim)
-{
-  u64 a = 0, b = 0;
-
-  simulation_pick_rng_neighbour(&a, &b);
-
-  if (!a_b_concat)
-  {
-    a_b_concat = calloc(1, sizeof(*a_b_concat));
-  }
-  memset(a_b_concat, 0, sizeof(*a_b_concat));
-  program_concat(a_b_concat, sim->memory + (a * SIZEOF_PROGRAM),
-                 sim->memory + (b * SIZEOF_PROGRAM));
-  program_execute(a_b_concat);
-  program_split(a_b_concat);
-}
-
-bf_token get_op(const bf_token cell)
-{
-  if (strchr(VALID_OPS, cell))
-    return cell;
-  else
-    return '\0';
-}
+static char *VALID_OPS               = "<>{}-+.,[]";
+static const Color possible_colors[] = {
+    ['<'] = {230, 25, 75, 255},  ['>'] = {60, 180, 75, 255},
+    ['{'] = {255, 225, 25, 255}, ['}'] = {0, 130, 200, 255},
+    ['-'] = {245, 130, 48, 255}, ['+'] = {145, 30, 180, 255},
+    ['.'] = {70, 240, 240, 255}, [','] = {240, 50, 230, 255},
+    ['['] = {210, 245, 60, 255}, [']'] = {250, 190, 212, 255},
+    ['\0'] = {0, 0, 0, 255},
+};
 
 Color simulation_cell_color(const bf_token cell)
 {
-  return possible_colors[get_op(cell)];
-}
-
-void simulation_draw(simulation_t *sim)
-{
-  for (size_t i = 0; i < NUM_PROGRAMS; ++i)
-  {
-    const bf_token *base = sim->memory + (i * SIZEOF_PROGRAM);
-    u64 s_x              = (i % SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
-    u64 s_y              = (i / SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
-
-    for (u64 j = 0; j < SIZEOF_PROGRAM; ++j)
-    {
-      u64 p_x = j % PROGRAM_ROW_SIZE;
-      u64 p_y = j / PROGRAM_ROW_SIZE;
-      p_x += s_x;
-      p_y += s_y;
-
-      Color color = simulation_cell_color(base[j]);
-
-      // DrawRectangle(p_x * CELL_WIDTH, p_y * CELL_HEIGHT, CELL_WIDTH,
-      //               CELL_HEIGHT, color);
-      DrawRectangleV((Vector2){CELL_WIDTH * p_x, CELL_HEIGHT * p_y},
-                     (Vector2){CELL_WIDTH, CELL_HEIGHT}, color);
-    }
-
-#if DRAW_PROGRAM_OUTLINE
-    DrawRectangleLinesEx((Rectangle){.x      = s_x * CELL_WIDTH,
-                                     .y      = s_y * CELL_HEIGHT,
-                                     .width  = CELL_WIDTH * PROGRAM_ROW_SIZE,
-                                     .height = CELL_HEIGHT * PROGRAM_ROW_SIZE},
-                         CELL_WIDTH / PROGRAM_ROW_SIZE, DARKGRAY);
-#endif
-  }
+  return possible_colors[strchr(VALID_OPS, cell) ? cell : '\0'];
 }
 
 /* Copyright (C) 2026 Aryadev Chavali
