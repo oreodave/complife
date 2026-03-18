@@ -75,22 +75,16 @@ Color simulation_cell_color(const bf_token cell)
 
 void simulation_draw(simulation_t *sim)
 {
-  const u64 PROGRAM_ROW    = (1 << (SIZEOF_PROGRAM_POW_2 / 2));
-  const u64 SIMULATION_ROW = (1 << (NUM_PROGRAMS_POW_2 / 2));
-  const u64 ROW_NUM_CELLS  = (PROGRAM_ROW * SIMULATION_ROW);
-  const f64 CELL_WIDTH     = WIDTH / (f64)ROW_NUM_CELLS;
-  const f64 CELL_HEIGHT    = HEIGHT / (f64)ROW_NUM_CELLS;
-
   for (size_t i = 0; i < NUM_PROGRAMS; ++i)
   {
     const bf_token *base = sim->memory + (i * SIZEOF_PROGRAM);
-    u64 s_x              = (i % SIMULATION_ROW) * PROGRAM_ROW;
-    u64 s_y              = (i / SIMULATION_ROW) * PROGRAM_ROW;
+    u64 s_x              = (i % SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
+    u64 s_y              = (i / SIMULATION_ROW_SIZE) * PROGRAM_ROW_SIZE;
 
     for (u64 j = 0; j < SIZEOF_PROGRAM; ++j)
     {
-      u64 p_x = j % PROGRAM_ROW;
-      u64 p_y = j / PROGRAM_ROW;
+      u64 p_x = j % PROGRAM_ROW_SIZE;
+      u64 p_y = j / PROGRAM_ROW_SIZE;
       p_x += s_x;
       p_y += s_y;
 
@@ -104,8 +98,8 @@ void simulation_draw(simulation_t *sim)
 
     DrawRectangleLinesEx((Rectangle){.x      = s_x * CELL_WIDTH,
                                      .y      = s_y * CELL_HEIGHT,
-                                     .width  = CELL_WIDTH * SIMULATION_ROW,
-                                     .height = CELL_HEIGHT * SIMULATION_ROW},
+                                     .width  = CELL_WIDTH * PROGRAM_ROW_SIZE,
+                                     .height = CELL_HEIGHT * PROGRAM_ROW_SIZE},
                          1, DARKGRAY);
   }
 }

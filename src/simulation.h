@@ -9,8 +9,6 @@
 
 #include "bf.h"
 
-#define SIMULATION_SIZE (NUM_PROGRAMS * SIZEOF_PROGRAM)
-
 typedef struct
 {
   bf_token memory[SIMULATION_SIZE];
