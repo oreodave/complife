@@ -80,13 +80,13 @@ void simulation_draw(simulation_t *sim)
   for (size_t i = 0; i < NUM_PROGRAMS; ++i)
   {
     const bf_token *base = sim->memory + (i * SIZEOF_PROGRAM);
-    u64 s_x              = (i / SIMULATION_ROW) * PROGRAM_ROW;
-    u64 s_y              = (i % SIMULATION_ROW) * PROGRAM_ROW;
+    u64 s_x              = (i % SIMULATION_ROW) * PROGRAM_ROW;
+    u64 s_y              = (i / SIMULATION_ROW) * PROGRAM_ROW;
 
     for (u64 j = 0; j < SIZEOF_PROGRAM; ++j)
     {
-      u64 p_x = j / PROGRAM_ROW;
-      u64 p_y = j % PROGRAM_ROW;
+      u64 p_x = j % PROGRAM_ROW;
+      u64 p_y = j / PROGRAM_ROW;
       p_x += s_x;
       p_y += s_y;
 
