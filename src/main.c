@@ -31,6 +31,7 @@ struct ThreadState
   bool paused, done;
 };
 
+static const struct timespec THREAD_SLEEP = {.tv_nsec = 5000};
 int thread_simulation_iterate(void *ptr)
 {
   struct ThreadState *state = ptr;
@@ -38,6 +39,7 @@ int thread_simulation_iterate(void *ptr)
   {
     while (state->paused && !state->done)
     {
+      thrd_sleep(&THREAD_SLEEP, NULL);
     }
     simulation_iterate(state->simulation);
   }
@@ -51,6 +53,7 @@ int thread_simulation_mutate(void *ptr)
   {
     while (state->paused && !state->done)
     {
+      thrd_sleep(&THREAD_SLEEP, NULL);
     }
     simulation_mutate(state->simulation);
   }
