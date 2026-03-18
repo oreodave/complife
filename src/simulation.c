@@ -29,7 +29,7 @@ void simulation_iterate(simulation_t *sim)
 #if MUTATION_CHANCE
   for (u64 i = 0; i < SIMULATION_SIZE; ++i)
   {
-    if ((rand() % MUTATION_CHANCE) == 0)
+    if ((rand() % MUTATION_CHANCE) == (MUTATION_CHANCE - 1))
     {
       sim->memory[i] += (rand() % MUTATION_OFFSET) - (MUTATION_OFFSET / 2);
     }

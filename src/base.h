@@ -39,8 +39,8 @@ typedef double f64;
 #define NUM_PROGRAMS_POW_2   8
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
 
-#define MUTATION_CHANCE 0
-#define MUTATION_OFFSET 2
+#define MUTATION_CHANCE 10000
+#define MUTATION_OFFSET 3
 
 #endif
 
