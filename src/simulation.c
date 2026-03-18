@@ -30,7 +30,7 @@ void simulation_mutate(simulation_t *sim)
   {
     if ((rand() % MUTATION_CHANCE) == (MUTATION_CHANCE - 1))
     {
-      sim->memory[i] += (rand() % MUTATION_OFFSET) - (MUTATION_OFFSET / 2);
+      sim->memory[i] = rand() % 255;
     }
   }
 #else
