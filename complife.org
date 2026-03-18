@@ -1,4 +1,8 @@
-* TODO Restructure simulation
+#+filetags: complife
+
+* DONE Restructure simulation
+DONE: 2026-03-18.
+
 Instead of going for one massive tape with "lines" being programs, go
 for 8x8 chunks.
 
@@ -11,4 +15,45 @@ assertions it makes about the input programs is that they are
 contiguous.  Essentially the same as our previous implementation.
 
 Now we just need to do the hard bit!
-** TODO Refactor simulation
+** DONE Refactor simulation
+* TODO Fix segfaults with 64 byte programs :bugs:
+For some reason we can segfault when executing simulations where we
+have 64 byte programs.  Characteristics:
+- It happens seemingly randomly throughout execution, and has
+  backtraces that aren't really helpful:
+  - ~EndDrawing~ of Raylib.
+  - ~abort~ somewhere on the stack
+  - Some nvidia code???
+    - Tested on an integrated Intel graphics machine, same issue but
+      doesn't report nvidia code as the cause, so unlikely to be due
+      to that.
+- Not nearly as present with higher or lower sized programs, though
+  can happen.
+* TODO Parallelise even more
+Simulations are now at a point where we can see interesting emergent
+behaviour, that is different depending on the environmental conditions
+we setup (mutation rate, size of programs, number of programs).
+
+However for larger sized workloads, though the simulation is
+rendering really fast, progression of the simulation with regards to
+this emergent behaviour can be quite slow.  I believe adding a few
+thread workers to perform reactions simultaneously would help boost
+the throughput up a bit.
+
+Notes:
+- Mutation can happen independently of reaction.  If the concatenation
+  structure has already been made, then the changes from mutation are
+  written over.  If it hasn't been made, mutation gets propagated.
+  Either case can and will happen.
+- We should reduce locking as much as possible.
+** TODO Ensure workers aren't working on the same programs
+We need to ensure any two workers aren't working on the same programs
+as:
+1) Whoever writes last wins the race, and we could have a really
+   unfortunate situation where one component from one worker each gets
+   written (worst case).
+2) It's wasted effort
+
+So we'll need a way to intercept the program picking process of each
+worker.
+** TODO Implement threading on the simulation
