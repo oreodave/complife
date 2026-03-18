@@ -38,21 +38,23 @@ void simulation_mutate(simulation_t *sim)
 #endif
 }
 
-static struct ProgramConcat *a_b_concat = NULL;
-void simulation_iterate(simulation_t *sim)
+// Strategy 1: Pick two random cells
+void simulation_pick_rng_pair(u64 *a, u64 *b)
 {
-  u64 a = 0, b = 0;
-  // Strategy 1: Pick two random cells
-  // while (a == b)
-  // {
-  //   a = rand() % NUM_PROGRAMS;
-  //   b = rand() % NUM_PROGRAMS;
-  // }
+  while (*a == *b)
+  {
+    *a = rand() % NUM_PROGRAMS;
+    *b = rand() % NUM_PROGRAMS;
+  }
+}
 
-  // Strategy 2: Pick a random cell, then iterate on all neighbours
-  a       = rand() % NUM_PROGRAMS;
-  u64 a_x = a % SIMULATION_ROW_SIZE;
-  u64 a_y = a / SIMULATION_ROW_SIZE;
+// Strategy 2: Pick a random cell, then iterate on all neighbours
+// Perform the reaction
+void simulation_pick_rng_neighbour(u64 *a, u64 *b)
+{
+  *a      = rand() % NUM_PROGRAMS;
+  u64 a_x = *a % SIMULATION_ROW_SIZE;
+  u64 a_y = *a / SIMULATION_ROW_SIZE;
 
   bool valid_dir[4] = {
       a_x > 0,
@@ -65,40 +67,47 @@ void simulation_iterate(simulation_t *sim)
   u64 size          = 0;
   if (valid_dir[0])
   {
-    neighbours[size++] = a - 1;
+    neighbours[size++] = *a - 1;
     if (valid_dir[2])
     {
-      neighbours[size++] = a - SIMULATION_ROW_SIZE - 1;
+      neighbours[size++] = *a - SIMULATION_ROW_SIZE - 1;
     }
     if (valid_dir[3])
     {
-      neighbours[size++] = a + SIMULATION_ROW_SIZE - 1;
+      neighbours[size++] = *a + SIMULATION_ROW_SIZE - 1;
     }
   }
   if (valid_dir[1])
   {
-    neighbours[size++] = a + 1;
+    neighbours[size++] = *a + 1;
     if (valid_dir[2])
     {
-      neighbours[size++] = a - SIMULATION_ROW_SIZE + 1;
+      neighbours[size++] = *a - SIMULATION_ROW_SIZE + 1;
     }
     if (valid_dir[3])
     {
-      neighbours[size++] = a + SIMULATION_ROW_SIZE + 1;
+      neighbours[size++] = *a + SIMULATION_ROW_SIZE + 1;
     }
   }
   if (valid_dir[2])
   {
-    neighbours[size++] = a - SIMULATION_ROW_SIZE;
+    neighbours[size++] = *a - SIMULATION_ROW_SIZE;
   }
   if (valid_dir[3])
   {
-    neighbours[size++] = a + SIMULATION_ROW_SIZE;
+    neighbours[size++] = *a + SIMULATION_ROW_SIZE;
   }
 
-  b = neighbours[rand() % size];
+  *b = neighbours[rand() % size];
+}
 
-  // Perform the reaction
+static struct ProgramConcat *a_b_concat = NULL;
+void simulation_iterate(simulation_t *sim)
+{
+  u64 a = 0, b = 0;
+
+  simulation_pick_rng_neighbour(&a, &b);
+
   if (!a_b_concat)
   {
     a_b_concat = calloc(1, sizeof(*a_b_concat));
