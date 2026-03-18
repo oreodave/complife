@@ -12,7 +12,6 @@
 void program_concat(struct ProgramConcat *ret, bf_token *a, bf_token *b)
 {
   assert(a && b);
-  memset(ret, 0, sizeof(*ret));
   ret->a = a;
   ret->b = b;
   memcpy(ret->tape, a, SIZEOF_PROGRAM);
@@ -92,9 +91,10 @@ void loop_end(struct ProgramConcat *prg, struct MachineContext *ctx,
   }
 }
 
+static vec_t loop_stack = {0};
 void program_execute(struct ProgramConcat *prg)
 {
-  vec_t loop_stack = {0};
+  loop_stack.size = 0;
   vec_ensure_capacity(&loop_stack, sizeof(prg->tape) * sizeof(u64));
 
   for (struct MachineContext ctx = {0};
@@ -107,7 +107,10 @@ void program_execute(struct ProgramConcat *prg)
     case '<':
       // NOTE: We're doing a safe subtraction here, but maybe we should
       // terminate execution if subtraction will overflow?
-      ctx.head0 = SAFE_SUB(ctx.head0, 1);
+      // ctx.head0 = SAFE_SUB(ctx.head0, 1);
+
+      ctx.head0 -= 1;
+      ctx.head0 %= sizeof(prg->tape);
       ++ctx.ip;
       break;
     case '>':
@@ -117,7 +120,10 @@ void program_execute(struct ProgramConcat *prg)
     case '{':
       // NOTE: We're doing a safe subtraction here, but maybe we should
       // terminate execution if subtraction will overflow?
-      ctx.head1 = SAFE_SUB(ctx.head1, 1);
+      // ctx.head1 = SAFE_SUB(ctx.head1, 1);
+
+      ctx.head1 -= 1;
+      ctx.head1 %= sizeof(prg->tape);
       ++ctx.ip;
       break;
     case '}':
@@ -151,8 +157,6 @@ void program_execute(struct ProgramConcat *prg)
       break;
     }
   }
-
-  vec_free(&loop_stack);
 }
 
 void program_split(struct ProgramConcat *prg)

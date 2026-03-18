@@ -26,17 +26,21 @@ typedef float f32;
 typedef double f64;
 
 #define MAX(A, B)      ((A) > (B) ? (A) : (B))
+#define MIN(A, B)      ((A) < (B) ? (A) : (B))
 #define SAFE_SUB(A, B) ((A) < (B) ? 0 : (A) - (B))
 
 // GUI stuff
 #define WIDTH  800
-#define HEIGHT 600
+#define HEIGHT 800
 
 // Simulation constants
 #define SIZEOF_PROGRAM_POW_2 8
 #define SIZEOF_PROGRAM       (1 << SIZEOF_PROGRAM_POW_2)
 #define NUM_PROGRAMS_POW_2   8
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
+
+#define MUTATION_CHANCE 0
+#define MUTATION_OFFSET 2
 
 #endif
 

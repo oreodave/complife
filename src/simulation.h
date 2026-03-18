@@ -13,7 +13,6 @@
 
 typedef struct
 {
-  u64 a, b;
   bf_token memory[SIMULATION_SIZE];
 } simulation_t;
 
