@@ -38,6 +38,7 @@ void simulation_mutate(simulation_t *sim)
 #endif
 }
 
+static struct ProgramConcat *a_b_concat = NULL;
 void simulation_iterate(simulation_t *sim)
 {
   u64 a = 0, b = 0;
@@ -48,12 +49,15 @@ void simulation_iterate(simulation_t *sim)
   }
 
   // Perform the reaction
-  struct ProgramConcat *a_b_concat = calloc(1, sizeof(*a_b_concat));
+  if (!a_b_concat)
+  {
+    a_b_concat = calloc(1, sizeof(*a_b_concat));
+  }
+  memset(a_b_concat, 0, sizeof(*a_b_concat));
   program_concat(a_b_concat, sim->memory + (a * SIZEOF_PROGRAM),
                  sim->memory + (b * SIZEOF_PROGRAM));
   program_execute(a_b_concat);
   program_split(a_b_concat);
-  free(a_b_concat);
 }
 
 bf_token get_op(const bf_token cell)
