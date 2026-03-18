@@ -4,18 +4,22 @@
  * License: See end of file
  */
 
-#include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <threads.h>
 #include <time.h>
 
+#include <raylib.h>
+#include <raymath.h>
+
 #include "base.h"
 #include "bf.h"
 #include "simulation.h"
 #include "sv.h"
 #include "vec.h"
+
+static char *VALID_OPS = "<>{}-+.,[]";
 
 void simulation_soup(simulation_t *sim)
 {
@@ -66,6 +70,10 @@ int main(void)
   simulation_soup(&sim);
   srand(time(NULL));
 
+  auto const MOVEMENT_SPEED = 5.0f;
+  auto const ZOOM_SPEED     = 0.5f;
+  auto const ZOOM_MAX       = 5.0f;
+
   thrd_t thread_iterator, thread_mutator;
   struct ThreadState state_iterator = {
       .simulation = &sim,
@@ -82,6 +90,16 @@ int main(void)
 
   InitWindow(WIDTH, HEIGHT, "CompLife");
   SetTargetFPS(60);
+
+  const Vector2 screen_to_program = {CELL_WIDTH * PROGRAM_ROW_SIZE,
+                                     CELL_HEIGHT * PROGRAM_ROW_SIZE};
+
+  Camera2D camera = {0};
+  camera.target   = (Vector2){0};
+  camera.offset   = (Vector2){0};
+  camera.rotation = 0.0f;
+  camera.zoom     = 1.0f;
+
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
     if (IsKeyPressed(KEY_SPACE))
@@ -89,10 +107,54 @@ int main(void)
       state_iterator.paused = !state_iterator.paused;
       state_mutator.paused  = !state_mutator.paused;
     }
+    if (IsKeyDown(KEY_W))
+    {
+      camera.offset.y += MOVEMENT_SPEED;
+    }
+    if (IsKeyDown(KEY_S))
+    {
+      camera.offset.y -= MOVEMENT_SPEED;
+    }
+    if (IsKeyDown(KEY_A))
+    {
+      camera.offset.x += MOVEMENT_SPEED;
+    }
+    if (IsKeyDown(KEY_D))
+    {
+      camera.offset.x -= MOVEMENT_SPEED;
+    }
+    if (IsKeyPressed(KEY_PERIOD))
+    {
+      camera.offset = (Vector2){0};
+      camera.zoom   = 1.0f;
+    }
+    camera.zoom += GetMouseWheelMove() * ZOOM_SPEED;
+    camera.zoom = Clamp(camera.zoom, 1.0, ZOOM_MAX);
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && camera.zoom == 1.0f &&
+        camera.offset.x == 0 && camera.offset.y == 0)
+    {
+      Vector2 position = GetMousePosition();
+      position         = Vector2Divide(position, screen_to_program);
+      position         = (Vector2){floor(position.x), floor(position.y)};
+
+      u64 abs_offset       = (position.x + (position.y * SIMULATION_ROW_SIZE));
+      const bf_token *base = sim.memory + abs_offset;
+      printf("(%d, %d): ", (i32)position.x, (i32)position.y);
+      for (u64 i = 0; i < SIZEOF_PROGRAM; ++i)
+      {
+        if (strchr(VALID_OPS, base[i]))
+        {
+          printf("%c ", base[i]);
+        }
+      }
+      printf("\n");
+    }
 
     BeginDrawing();
+    BeginMode2D(camera);
     ClearBackground(BLACK);
     simulation_draw(&sim);
+    EndMode2D();
     EndDrawing();
   }
   state_iterator.done = true;
