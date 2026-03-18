@@ -8,14 +8,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <threads.h>
 #include <time.h>
 
 #include "base.h"
-#include "sv.h"
-#include "vec.h"
-
 #include "bf.h"
 #include "simulation.h"
+#include "sv.h"
+#include "vec.h"
 
 void simulation_soup(simulation_t *sim)
 {
@@ -25,22 +25,78 @@ void simulation_soup(simulation_t *sim)
   }
 }
 
+struct ThreadState
+{
+  simulation_t *simulation;
+  bool paused, done;
+};
+
+int thread_simulation_iterate(void *ptr)
+{
+  struct ThreadState *state = ptr;
+  while (!state->done)
+  {
+    while (state->paused && !state->done)
+    {
+    }
+    simulation_iterate(state->simulation);
+  }
+  return 0;
+}
+
+int thread_simulation_mutate(void *ptr)
+{
+  struct ThreadState *state = ptr;
+  while (!state->done)
+  {
+    while (state->paused && !state->done)
+    {
+    }
+    simulation_mutate(state->simulation);
+  }
+  return 0;
+}
+
 int main(void)
 {
   simulation_t sim = {0};
   simulation_soup(&sim);
   srand(time(NULL));
 
+  thrd_t thread_iterator, thread_mutator;
+  struct ThreadState state_iterator = {
+      .simulation = &sim,
+      .paused     = true,
+      .done       = false,
+  };
+  struct ThreadState state_mutator = {
+      .simulation = &sim,
+      .paused     = true,
+      .done       = false,
+  };
+  thrd_create(&thread_iterator, thread_simulation_iterate, &state_iterator);
+  thrd_create(&thread_mutator, thread_simulation_mutate, &state_mutator);
+
   InitWindow(WIDTH, HEIGHT, "CompLife");
   SetTargetFPS(60);
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
-    simulation_iterate(&sim);
+    if (IsKeyPressed(KEY_SPACE))
+    {
+      state_iterator.paused = !state_iterator.paused;
+      state_mutator.paused  = !state_mutator.paused;
+    }
+
     BeginDrawing();
     ClearBackground(BLACK);
     simulation_draw(&sim);
+    DrawFPS(0, 0);
     EndDrawing();
   }
+  state_iterator.done = true;
+  state_mutator.done  = true;
+  thrd_join(thread_iterator, NULL);
+  thrd_join(thread_mutator, NULL);
   CloseWindow();
   return 0;
 }
