@@ -100,6 +100,7 @@ int main(void)
   camera.rotation = 0.0f;
   camera.zoom     = 1.0f;
 
+  bool single_tick = false;
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
     if (IsKeyPressed(KEY_SPACE))
@@ -138,6 +139,20 @@ int main(void)
       camera.offset = (Vector2){0};
       camera.target = (Vector2){0};
       camera.zoom   = 1.0f;
+    }
+
+    if (single_tick)
+    {
+
+      single_tick           = false;
+      state_iterator.paused = true;
+      state_mutator.paused  = true;
+    }
+    if (IsKeyPressed(KEY_COMMA))
+    {
+      single_tick           = true;
+      state_iterator.paused = false;
+      state_mutator.paused  = false;
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && camera.zoom == 1.0f &&
