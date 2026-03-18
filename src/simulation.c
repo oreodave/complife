@@ -96,11 +96,13 @@ void simulation_draw(simulation_t *sim)
                      (Vector2){CELL_WIDTH, CELL_HEIGHT}, color);
     }
 
+#if DRAW_PROGRAM_OUTLINE
     DrawRectangleLinesEx((Rectangle){.x      = s_x * CELL_WIDTH,
                                      .y      = s_y * CELL_HEIGHT,
                                      .width  = CELL_WIDTH * PROGRAM_ROW_SIZE,
                                      .height = CELL_HEIGHT * PROGRAM_ROW_SIZE},
-                         1, DARKGRAY);
+                         CELL_WIDTH / PROGRAM_ROW_SIZE, DARKGRAY);
+#endif
   }
 }
 

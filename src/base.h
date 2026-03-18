@@ -50,6 +50,8 @@ typedef double f64;
 #define MUTATION_CHANCE 5000
 #define MUTATION_OFFSET 1
 
+#define DRAW_PROGRAM_OUTLINE 1
+
 #endif
 
 /* Copyright (C) 2026 Aryadev Chavali
