@@ -23,14 +23,12 @@ void simulation_draw(simulation_t *sim);
 /* Copyright (C) 2026 Aryadev Chavali
 
  * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- FITNESS
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License Version 2 for
  * details.
 
  * You may distribute and modify this code under the terms of the GNU General
- * Public License Version 2, which you should have received a copy of along
- with
+ * Public License Version 2, which you should have received a copy of along with
  * this program.  If not, please go to <https://www.gnu.org/licenses/>.
 
  */
