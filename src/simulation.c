@@ -45,6 +45,7 @@ void simulation_iterate(simulation_t *sim)
   {
     a_b_concat = calloc(1, sizeof(*a_b_concat));
   }
+  // Ensure a_b_concat is completely zeroed
   memset(a_b_concat, 0, sizeof(*a_b_concat));
 
   // Reaction: Concat, execute, split.
@@ -155,7 +156,7 @@ void simulation_pick_rng_neighbour(u64 *a, u64 *b)
   *b = neighbours[rand() % size];
 }
 
-static char *VALID_OPS               = "<>{}-+.,[]";
+static const char *VALID_OPS         = "<>{}-+.,[]";
 static const Color possible_colors[] = {
     ['<'] = {230, 25, 75, 255},  ['>'] = {60, 180, 75, 255},
     ['{'] = {255, 225, 25, 255}, ['}'] = {0, 130, 200, 255},
@@ -167,7 +168,7 @@ static const Color possible_colors[] = {
 
 Color simulation_cell_color(const bf_token cell)
 {
-  return possible_colors[strchr(VALID_OPS, cell) ? cell : '\0'];
+  return possible_colors[(!!strchr(VALID_OPS, (u8)cell)) * cell];
 }
 
 /* Copyright (C) 2026 Aryadev Chavali

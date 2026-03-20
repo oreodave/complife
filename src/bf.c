@@ -105,10 +105,6 @@ void program_execute(struct ProgramConcat *prg)
     switch (opcode)
     {
     case '<':
-      // NOTE: We're doing a safe subtraction here, but maybe we should
-      // terminate execution if subtraction will overflow?
-      // ctx.head0 = SAFE_SUB(ctx.head0, 1);
-
       ctx.head0 -= 1;
       ctx.head0 %= sizeof(prg->tape);
       ++ctx.ip;
@@ -118,10 +114,6 @@ void program_execute(struct ProgramConcat *prg)
       ++ctx.ip;
       break;
     case '{':
-      // NOTE: We're doing a safe subtraction here, but maybe we should
-      // terminate execution if subtraction will overflow?
-      // ctx.head1 = SAFE_SUB(ctx.head1, 1);
-
       ctx.head1 -= 1;
       ctx.head1 %= sizeof(prg->tape);
       ++ctx.ip;
