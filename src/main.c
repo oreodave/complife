@@ -140,10 +140,33 @@ int main(void)
       camera.target = (Vector2){0};
       camera.zoom   = 1.0f;
     }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && camera.zoom == 1.0f &&
+        camera.offset.x == 0 && camera.offset.y == 0)
+    {
+      Vector2 position = GetMousePosition();
+      position         = Vector2Divide(position, screen_to_program);
+      position         = (Vector2){floor(position.x), floor(position.y)};
+
+      // Position has changed basis to the "program" basis, we need to calculate
+      // the offset in memory using it.
+
+      u64 abs_offset =
+          (position.x + (position.y * SIMULATION_ROW_SIZE)) * SIZEOF_PROGRAM;
+
+      bf_token *base = sim.memory + abs_offset;
+      printf("(%d, %d)@%lu: ", (i32)position.x, (i32)position.y, abs_offset);
+      for (u64 i = 0; i < SIZEOF_PROGRAM; ++i)
+      {
+        if (base[i] && strchr(VALID_OPS, base[i]))
+        {
+          printf("%c ", base[i]);
+        }
+      }
+      printf("\n");
+    }
 
     if (single_tick)
     {
-
       single_tick           = false;
       state_iterator.paused = true;
       state_mutator.paused  = true;
@@ -153,26 +176,6 @@ int main(void)
       single_tick           = true;
       state_iterator.paused = false;
       state_mutator.paused  = false;
-    }
-
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && camera.zoom == 1.0f &&
-        camera.offset.x == 0 && camera.offset.y == 0)
-    {
-      Vector2 position = GetMousePosition();
-      position         = Vector2Divide(position, screen_to_program);
-      position         = (Vector2){floor(position.x), floor(position.y)};
-
-      u64 abs_offset       = (position.x + (position.y * SIMULATION_ROW_SIZE));
-      const bf_token *base = sim.memory + abs_offset;
-      printf("(%d, %d): ", (i32)position.x, (i32)position.y);
-      for (u64 i = 0; i < SIZEOF_PROGRAM; ++i)
-      {
-        if (base[i] && strchr(VALID_OPS, base[i]))
-        {
-          printf("%c ", base[i]);
-        }
-      }
-      printf("\n");
     }
 
     BeginDrawing();
