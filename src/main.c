@@ -103,6 +103,7 @@ int main(void)
   bool single_tick = false;
   for (size_t ticks = 0; !WindowShouldClose(); ++ticks)
   {
+    (void)ticks;
     if (IsKeyPressed(KEY_SPACE))
     {
       state_iterator.paused = !state_iterator.paused;
