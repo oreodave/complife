@@ -34,7 +34,7 @@ typedef double f64;
 #define HEIGHT 1024
 
 // Simulation constants
-#define SIZEOF_PROGRAM_POW_2 6
+#define SIZEOF_PROGRAM_POW_2 8
 #define SIZEOF_PROGRAM       (1 << SIZEOF_PROGRAM_POW_2)
 #define NUM_PROGRAMS_POW_2   12
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
