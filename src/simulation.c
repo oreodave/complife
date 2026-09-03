@@ -36,23 +36,29 @@ void simulation_pick_rng_neighbour(u64 *a, u64 *b);
 static struct ProgramConcat *a_b_concat = NULL;
 void simulation_iterate(simulation_t *sim)
 {
-  // Pick a pair to react
-  u64 a = 0, b = 0;
-  simulation_pick_rng_neighbour(&a, &b);
-
   // Construct our concatenation object if not done already
   if (!a_b_concat)
-  {
     a_b_concat = calloc(1, sizeof(*a_b_concat));
-  }
-  // Ensure a_b_concat is completely zeroed
-  memset(a_b_concat, 0, sizeof(*a_b_concat));
 
-  // Reaction: Concat, execute, split.
-  program_concat(a_b_concat, sim->memory + (a * SIZEOF_PROGRAM),
-                 sim->memory + (b * SIZEOF_PROGRAM));
-  program_execute(a_b_concat);
-  program_split(a_b_concat);
+  // Pick a root node to start our reactions from
+  u64 a = 0;
+  a     = rand() % NUM_PROGRAMS;
+
+  for (u64 i = 0; i < CONSECUTIVE_NEIGHBOURS; ++i)
+  {
+    // Pick a neighbour
+    u64 b = 0;
+    simulation_pick_rng_neighbour(&a, &b);
+
+    // Reaction: Concat, execute, split.
+    program_concat(a_b_concat, sim->memory + (a * SIZEOF_PROGRAM),
+                   sim->memory + (b * SIZEOF_PROGRAM));
+    program_execute(a_b_concat);
+    program_split(a_b_concat);
+
+    // Make a b then continue iteration
+    a = b;
+  }
 }
 
 Color simulation_cell_color(const bf_token cell);
@@ -100,17 +106,16 @@ void simulation_pick_rng_pair(u64 *a, u64 *b)
 {
   while (*a == *b)
   {
-    *a = rand() % NUM_PROGRAMS;
     *b = rand() % NUM_PROGRAMS;
   }
 }
 
 void simulation_pick_rng_neighbour(u64 *a, u64 *b)
 {
-  *a      = rand() % NUM_PROGRAMS;
   u64 a_x = *a % SIMULATION_ROW_SIZE;
   u64 a_y = *a / SIMULATION_ROW_SIZE;
 
+  // TODO(oreo)[2026-09-03 15:41]: can this be done better?
   bool valid_dir[4] = {
       a_x > 0,
       a_x != (SIMULATION_ROW_SIZE - 1),
@@ -120,6 +125,7 @@ void simulation_pick_rng_neighbour(u64 *a, u64 *b)
 
   u64 neighbours[8] = {0};
   u64 size          = 0;
+
   if (valid_dir[0])
   {
     neighbours[size++] = *a - 1;

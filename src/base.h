@@ -40,7 +40,9 @@ typedef double f64;
 #define NUM_PROGRAMS         (1 << NUM_PROGRAMS_POW_2)
 #define MUTATION_CHANCE      (SIMULATION_SIZE)
 
-// Graphics
+#define MUTATION_CHANCE        (SIMULATION_SIZE)
+#define CONSECUTIVE_NEIGHBOURS 8
+
 #define SIMULATION_SIZE     (NUM_PROGRAMS * SIZEOF_PROGRAM)
 #define PROGRAM_ROW_SIZE    (1 << (SIZEOF_PROGRAM_POW_2 / 2))
 #define SIMULATION_ROW_SIZE (1 << (NUM_PROGRAMS_POW_2 / 2))
@@ -49,7 +51,7 @@ typedef double f64;
 #define CELL_WIDTH    (WIDTH / (f64)CELL_ROW_SIZE)
 #define CELL_HEIGHT   (HEIGHT / (f64)CELL_ROW_SIZE)
 
-#define DRAW_PROGRAM_OUTLINE 0
+#define DRAW_PROGRAM_OUTLINE 1
 
 #endif
 
