@@ -13,16 +13,9 @@ pub struct State {
 
 impl State {
     pub fn new() -> Self {
-        const POSSIBLE: [char; 10] =
-            ['<', '>', '{', '}', '-', '+', '.', ',', '[', ']'];
         let mut tokens = vec![0; SIMULATION_SIZE];
         for token in &mut tokens {
-            let choice = rand::random_range(0..11);
-            if choice == 10 {
-                *token = rand::random();
-            } else {
-                *token = POSSIBLE[choice] as u8;
-            }
+            *token = biased_random_token();
         }
         // rand::fill(&mut tokens[..]);
         let data = tokens.into_boxed_slice();
@@ -32,5 +25,15 @@ impl State {
             reserved: [false; NUM_PROGRAMS],
             mutating: false,
         }
+    }
+}
+
+const POSSIBLE: [char; 10] = ['<', '>', '{', '}', '-', '+', '.', ',', '[', ']'];
+pub fn biased_random_token() -> Token {
+    let choice = rand::random_range(0..(POSSIBLE.len() + 1));
+    if choice == POSSIBLE.len() {
+        rand::random()
+    } else {
+        POSSIBLE[choice] as Token
     }
 }

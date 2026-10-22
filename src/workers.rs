@@ -16,7 +16,7 @@ use std::sync::{Condvar, Mutex};
 use crate::{
     bf::{ProgramId, Reaction},
     constants::{MUTATION_CHANCE, NUM_PROGRAMS, SIMULATION_ROW_SIZE},
-    state::State,
+    state::{State, biased_random_token},
 };
 
 /// Perform one complete reaction on two unreserved programs given the current
@@ -71,6 +71,8 @@ pub fn work_once(state: &Mutex<State>, changed: &Condvar) {
     changed.notify_all();
 }
 
+const POSSIBLE: [char; 10] = ['<', '>', '{', '}', '-', '+', '.', ',', '[', ']'];
+
 pub fn mutate(state: &Mutex<State>, changed: &Condvar) {
     if MUTATION_CHANCE == 0 {
         return;
@@ -85,7 +87,9 @@ pub fn mutate(state: &Mutex<State>, changed: &Condvar) {
     // No worker can reserve a program until the mutation is complete.
     for cell in &mut state.data {
         if rand::random_range(1..=MUTATION_CHANCE) == 1 {
-            *cell = rand::random();
+            // *cell = POSSIBLE[rand::random_range(0..POSSIBLE.len())] as u8;
+            *cell = biased_random_token();
+            // *cell = rand::random();
         }
     }
 
