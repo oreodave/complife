@@ -1,5 +1,6 @@
 //! Main entrypoint program.
 
+mod bf;
 mod constants;
 mod raylib;
 mod sim;
