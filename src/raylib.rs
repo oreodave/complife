@@ -4,7 +4,10 @@
 //! the things we need.  Please note that the raylib source we're building
 //! against is located at thirdparty/.
 
-use std::{ffi::CString, ops::Mul};
+use std::{
+    ffi::CString,
+    ops::{Add, Mul},
+};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
@@ -16,6 +19,14 @@ pub struct Vector2 {
 impl Vector2 {
     pub const fn new(x: f32, y: f32) -> Self {
         Self { x, y }
+    }
+}
+
+impl Add for Vector2 {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self::Output {
+        Self::new(self.x + other.x, self.y + other.y)
     }
 }
 
@@ -38,10 +49,6 @@ pub struct Color {
 
 pub const fn color(r: u8, g: u8, b: u8) -> Color {
     Color { r, g, b, a: 255 }
-}
-
-pub const fn color_alpha(r: u8, g: u8, b: u8, a: u8) -> Color {
-    Color { r, g, b, a }
 }
 
 pub const BLACK: Color = color(0, 0, 0);

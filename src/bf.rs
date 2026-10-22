@@ -5,13 +5,27 @@
 //! modified version of Brainfuck, then _splitting_ the concatenated tape back
 //! into its subprograms, returning them to the simulation.
 
-use crate::{
-    constants::{PROGRAM_MAX_ITERS, PROGRAM_SIZE},
-    simulation::{ProgramId, Simulation},
-};
+use crate::constants::{NUM_PROGRAMS, PROGRAM_MAX_ITERS, PROGRAM_SIZE};
 
 pub type Token = u8;
 
+/// Identifier for a program.  These must be in the range (0..NUM_PROGRAMS).
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct ProgramId(usize);
+
+impl ProgramId {
+    pub fn new(n: usize) -> Self {
+        debug_assert!(n < NUM_PROGRAMS);
+        Self(n)
+    }
+
+    pub fn cell_range(self) -> std::ops::Range<usize> {
+        let start = self.0 * PROGRAM_SIZE;
+        start..start + PROGRAM_SIZE
+    }
+}
+
+/// The state of some Reaction in progress.
 #[derive(Debug)]
 pub struct Reaction {
     /// First Program's ID.
@@ -29,14 +43,13 @@ impl Reaction {
     pub fn new(
         first: ProgramId,
         second: ProgramId,
-        simulation: &Simulation,
+        simulation: &[Token],
     ) -> Self {
         let mut tape: [Token; PROGRAM_SIZE * 2] = [0; PROGRAM_SIZE * 2];
         {
             let (first_half, second_half) = tape.split_at_mut(PROGRAM_SIZE);
-            first_half.copy_from_slice(&simulation.tokens[first.cell_range()]);
-            second_half
-                .copy_from_slice(&simulation.tokens[second.cell_range()]);
+            first_half.copy_from_slice(&simulation[first.cell_range()]);
+            second_half.copy_from_slice(&simulation[second.cell_range()]);
         }
 
         Self {
@@ -65,11 +78,10 @@ impl Reaction {
 
     /// Following execution, copy over the new contents of each sub-program back
     /// into the [`Simulation`].
-    pub fn finish(self, simulation: &mut Simulation) {
+    pub fn finish(self, simulation: &mut [Token]) {
         let (first_half, second_half) = self.tape.split_at(PROGRAM_SIZE);
-        simulation.tokens[self.first.cell_range()].copy_from_slice(first_half);
-        simulation.tokens[self.second.cell_range()]
-            .copy_from_slice(second_half);
+        simulation[self.first.cell_range()].copy_from_slice(first_half);
+        simulation[self.second.cell_range()].copy_from_slice(second_half);
     }
 }
 
