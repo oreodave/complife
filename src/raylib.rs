@@ -4,13 +4,27 @@
 //! the things we need.  Please note that the raylib source we're building
 //! against is located at thirdparty/.
 
-use std::ffi::CString;
+use std::{ffi::CString, ops::Mul};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Vector2 {
     pub x: f32,
     pub y: f32,
+}
+
+impl Vector2 {
+    pub const fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
+impl Mul for Vector2 {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self::Output {
+        Self::new(self.x * other.x, self.y * other.y)
+    }
 }
 
 #[repr(C)]
