@@ -7,7 +7,7 @@
 
 use crate::{
     constants::{PROGRAM_MAX_ITERS, PROGRAM_SIZE},
-    sim::Simulation,
+    simulation::Simulation,
 };
 
 pub type Token = u8;

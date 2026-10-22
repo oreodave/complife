@@ -3,12 +3,12 @@
 mod bf;
 mod constants;
 mod raylib;
-mod sim;
+mod simulation;
 
 use crate::{
     constants::{HEIGHT, WIDTH},
     raylib::*,
-    sim::Simulation,
+    simulation::Simulation,
 };
 
 fn main() {

@@ -10,13 +10,12 @@ pub const WIDTH: i32 = 1024;
 pub const HEIGHT: i32 = 1024;
 
 const PROGRAM_SIZE_POW_2: usize = 8;
+const NUM_PROGRAMS_POW_2: usize = 8;
+
 /// Size of an individual program.
 pub const PROGRAM_SIZE: usize = 1 << PROGRAM_SIZE_POW_2;
-
-const NUM_PROGRAMS_POW_2: usize = 8;
 /// Number of programs within the simulation.
 pub const NUM_PROGRAMS: usize = 1 << NUM_PROGRAMS_POW_2;
-
 /// Total number of cells within the simulation.
 pub const SIMULATION_SIZE: usize = NUM_PROGRAMS * PROGRAM_SIZE;
 
