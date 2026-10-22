@@ -1,13 +1,30 @@
 //! Complete program simulation.
 
 use crate::{
-    bf::{Program, Token},
+    bf::{Reaction, Token},
     constants::{
         CELL_DIMENSIONS, MUTATION_CHANCE, NUM_PROGRAMS, PROGRAM_ROW_SIZE,
         PROGRAM_SIZE, SIMULATION_ROW_SIZE, SIMULATION_SIZE,
     },
     raylib::{Canvas, Color, Rectangle, Vector2, WHITE, color},
 };
+
+/// Index into [`Simulation`] of some Program.  These must be in the range
+/// (0..NUM_PROGRAMS).
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct ProgramId(usize);
+
+impl ProgramId {
+    pub fn new(n: usize) -> Self {
+        debug_assert!(n < NUM_PROGRAMS);
+        Self(n)
+    }
+
+    pub fn cell_range(self) -> std::ops::Range<usize> {
+        let start = self.0 * PROGRAM_SIZE;
+        start..start + PROGRAM_SIZE
+    }
+}
 
 /// Generalised simulation data.
 #[derive(Debug)]
@@ -109,7 +126,7 @@ fn random_other_cell(a: usize) -> usize {
 
 fn random_neighbour(a: usize) -> usize {
     let x = a % SIMULATION_ROW_SIZE;
-    let y = a % SIMULATION_ROW_SIZE;
+    let y = a / SIMULATION_ROW_SIZE;
 
     let mut neighbours = [0; 8];
     let mut count = 0;
@@ -128,7 +145,7 @@ fn random_neighbour(a: usize) -> usize {
             (x.checked_add_signed(dx), y.checked_add_signed(dy))
         {
             if nx < SIMULATION_ROW_SIZE && ny < SIMULATION_ROW_SIZE {
-                neighbours[count] = (nx * SIMULATION_ROW_SIZE) + ny;
+                neighbours[count] = nx + (ny * SIMULATION_ROW_SIZE);
                 count += 1;
             }
         }
