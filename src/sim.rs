@@ -23,6 +23,17 @@ impl Simulation {
         Self { tokens }
     }
 
+    pub fn mutate(&mut self) {
+        if MUTATION_CHANCE == 0 {
+            return;
+        }
+        for cell in &mut self.tokens {
+            if rand::random_range(1..=MUTATION_CHANCE) == 1 {
+                *cell = rand::random();
+            }
+        }
+    }
+
     pub fn draw(&self, canvas: &Canvas) {
         for i in 0..NUM_PROGRAMS {
             let slice = &self.tokens[i * PROGRAM_SIZE..];

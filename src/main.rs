@@ -25,6 +25,7 @@ fn main() {
     let mut sim = Simulation::new();
 
     while !window.should_close() {
+        sim.mutate();
         let canvas = window.draw(camera);
         canvas.clear_background(BLACK);
         sim.draw(&canvas);
