@@ -37,5 +37,9 @@ pub const CELL_DIMENSIONS: Vector2 = Vector2 {
 
 /// Maximum bound on iterations during program reaction.
 pub const PROGRAM_MAX_ITERS: usize = 1 << 13;
+
 /// Mutation chance (i.e. 1 in MUTATION_CHANCE chance of a given cell mutating).
 pub const MUTATION_CHANCE: usize = SIMULATION_SIZE;
+
+/// Number of parallel workers that can perform reactions.
+pub const WORKER_COUNT: usize = 7;

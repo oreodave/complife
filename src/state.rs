@@ -8,6 +8,7 @@ use crate::{
 pub struct State {
     pub data: Box<[Token]>,
     pub reserved: [bool; NUM_PROGRAMS],
+    pub mutating: bool,
 }
 
 impl State {
@@ -19,6 +20,7 @@ impl State {
         Self {
             data,
             reserved: [false; NUM_PROGRAMS],
+            mutating: false,
         }
     }
 }

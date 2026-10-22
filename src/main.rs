@@ -10,7 +10,7 @@ mod workers;
 
 use std::{
     sync::{
-        Mutex,
+        Condvar, Mutex,
         atomic::{AtomicBool, Ordering},
     },
     thread,
@@ -22,6 +22,7 @@ use crate::{
     constants::{
         CELL_DIMENSIONS, HEIGHT, MUTATION_CHANCE, NUM_PROGRAMS,
         PROGRAM_ROW_SIZE, SIMULATION_ROW_SIZE, SIMULATION_SIZE, WIDTH,
+        WORKER_COUNT,
     },
     raylib::*,
     state::State,
@@ -39,40 +40,42 @@ fn main() {
         zoom: 1.0,
     };
 
-    // Workers and generalised shared state
+    // Generalised shared state
     let state: Mutex<State> = Mutex::new(State::new());
+    let changed = Condvar::new();
     let alive = AtomicBool::new(true);
-    let worker_count = 4;
+
     let mut display_tokens = vec![0; SIMULATION_SIZE];
 
     println!(
         "Spawning {} workers and 1 mutator thread.",
-        worker_count - 1
+        WORKER_COUNT - 1
     );
 
     thread::scope(|scope| {
         if MUTATION_CHANCE > 0 {
             scope.spawn(|| {
-                let delta = Duration::from_millis(1000);
+                let delta = Duration::from_millis(16);
                 let mut next = Instant::now() + delta;
                 while alive.load(Ordering::Relaxed) {
                     thread::sleep(
                         next.saturating_duration_since(Instant::now()),
                     );
+
                     if !alive.load(Ordering::Relaxed) {
                         break;
                     }
 
-                    mutate(&state);
+                    mutate(&state, &changed);
                     next += delta;
                 }
             });
         }
 
-        for _ in 0..(worker_count - 1) {
+        for _ in 0..(WORKER_COUNT - 1) {
             scope.spawn(|| {
                 while alive.load(Ordering::Relaxed) {
-                    work_once(&state);
+                    work_once(&state, &changed);
                 }
             });
         }

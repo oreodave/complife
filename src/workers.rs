@@ -11,7 +11,7 @@
 //! otherwise they risk a data race.  So we need to track the fact that a worker
 //! is using some program i.e. that program is busy.
 
-use std::sync::Mutex;
+use std::sync::{Condvar, Mutex};
 
 use crate::{
     bf::{ProgramId, Reaction},
@@ -24,9 +24,14 @@ use crate::{
 ///
 /// This involves reserving two unreserved programs, reacting them, then freeing
 /// them.
-pub fn work_once(state: &Mutex<State>) {
+pub fn work_once(state: &Mutex<State>, changed: &Condvar) {
     let (first, second, mut reaction) = {
         let mut state = state.lock().unwrap();
+
+        // The mutator blocks new reservations until every active reaction finishes.
+        while state.mutating {
+            state = changed.wait(state).unwrap();
+        }
 
         // If we don't have at least two programs unreserved, we cannot do
         // anything.
@@ -62,19 +67,32 @@ pub fn work_once(state: &Mutex<State>) {
         state.reserved[first] = false;
         state.reserved[second] = false;
     }
+
+    changed.notify_all();
 }
 
-pub fn mutate(state: &Mutex<State>) {
+pub fn mutate(state: &Mutex<State>, changed: &Condvar) {
     if MUTATION_CHANCE == 0 {
         return;
     }
 
     let mut state = state.lock().unwrap();
+    state.mutating = true;
+    while state.reserved.iter().any(|&busy| busy) {
+        state = changed.wait(state).unwrap();
+    }
+
+    // No worker can reserve a program until the mutation is complete.
     for cell in &mut state.data {
         if rand::random_range(1..=MUTATION_CHANCE) == 1 {
             *cell = rand::random();
         }
     }
+
+    state.mutating = false;
+    drop(state);
+
+    changed.notify_all();
 }
 
 /// Choose two unreserved programs randomly given the set of reserved programs
