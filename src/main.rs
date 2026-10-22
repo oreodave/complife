@@ -43,6 +43,7 @@ fn main() {
     // Generalised shared state
     let state: Mutex<State> = Mutex::new(State::new());
     let changed = Condvar::new();
+    let paused = AtomicBool::new(false);
     let alive = AtomicBool::new(true);
 
     let mut display_tokens = vec![0; SIMULATION_SIZE];
@@ -57,6 +58,7 @@ fn main() {
             scope.spawn(|| {
                 let delta = Duration::from_millis(16);
                 let mut next = Instant::now() + delta;
+
                 while alive.load(Ordering::Relaxed) {
                     thread::sleep(
                         next.saturating_duration_since(Instant::now()),
@@ -64,6 +66,8 @@ fn main() {
 
                     if !alive.load(Ordering::Relaxed) {
                         break;
+                    } else if paused.load(Ordering::Relaxed) {
+                        continue;
                     }
 
                     mutate(&state, &changed);
@@ -75,14 +79,20 @@ fn main() {
         for _ in 0..(WORKER_COUNT - 1) {
             scope.spawn(|| {
                 while alive.load(Ordering::Relaxed) {
+                    if paused.load(Ordering::Relaxed) {
+                        continue;
+                    }
                     work_once(&state, &changed);
                 }
             });
         }
 
         while !window.should_close() {
-            // Make a local copy after locking the mutex to avoid r/w data
-            // races.
+            if window.key_pressed(KEY_SPACE) {
+                paused
+                    .store(!paused.load(Ordering::Relaxed), Ordering::Relaxed);
+            }
+
             {
                 let state = state.lock().unwrap();
                 display_tokens.copy_from_slice(&state.data);
