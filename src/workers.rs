@@ -24,7 +24,7 @@ use crate::{
 ///
 /// This involves reserving two unreserved programs, reacting them, then freeing
 /// them.
-pub fn work_once(state: &mut Mutex<State>) {
+pub fn work_once(state: &Mutex<State>) {
     let (first, second, mut reaction) = {
         let mut state = state.lock().unwrap();
 
@@ -35,7 +35,11 @@ pub fn work_once(state: &mut Mutex<State>) {
         }
 
         // Reserve a pair of programs
-        let (first, second) = choose_unreserved_pair(&state.reserved);
+        let Some((first, second)) =
+            choose_unreserved_neighbours(&state.reserved)
+        else {
+            return;
+        };
         state.reserved[first] = true;
         state.reserved[second] = true;
 
@@ -78,7 +82,9 @@ fn choose_unreserved_pair(res: &[bool; NUM_PROGRAMS]) -> (usize, usize) {
 
 /// Choose two unreserved neighbouring programs randomly given the set of
 /// reserved programs `res`.
-fn choose_unreserved_neighbours(res: &[bool; NUM_PROGRAMS]) -> (usize, usize) {
+fn choose_unreserved_neighbours(
+    res: &[bool; NUM_PROGRAMS],
+) -> Option<(usize, usize)> {
     let mut a = rand::random_range(0..res.len());
     while res[a] {
         a = rand::random_range(0..res.len());
@@ -103,12 +109,16 @@ fn choose_unreserved_neighbours(res: &[bool; NUM_PROGRAMS]) -> (usize, usize) {
         if let (Some(nx), Some(ny)) =
             (x.checked_add_signed(dx), y.checked_add_signed(dy))
         {
-            if nx < SIMULATION_ROW_SIZE && ny < SIMULATION_ROW_SIZE {
-                neighbours[count] = nx + (ny * SIMULATION_ROW_SIZE);
+            let choice = nx + (ny * SIMULATION_ROW_SIZE);
+            if nx < SIMULATION_ROW_SIZE
+                && ny < SIMULATION_ROW_SIZE
+                && !res[choice]
+            {
+                neighbours[count] = choice;
                 count += 1;
             }
         }
     }
 
-    (a, neighbours[rand::random_range(0..count)])
+    (count > 0).then(|| (a, neighbours[rand::random_range(0..count)]))
 }
