@@ -15,7 +15,7 @@ use std::sync::Mutex;
 
 use crate::{
     bf::{ProgramId, Reaction},
-    constants::{NUM_PROGRAMS, SIMULATION_ROW_SIZE},
+    constants::{MUTATION_CHANCE, NUM_PROGRAMS, SIMULATION_ROW_SIZE},
     state::State,
 };
 
@@ -61,6 +61,19 @@ pub fn work_once(state: &Mutex<State>) {
         reaction.finish(&mut state.data);
         state.reserved[first] = false;
         state.reserved[second] = false;
+    }
+}
+
+pub fn mutate(state: &Mutex<State>) {
+    if MUTATION_CHANCE == 0 {
+        return;
+    }
+
+    let mut state = state.lock().unwrap();
+    for cell in &mut state.data {
+        if rand::random_range(1..=MUTATION_CHANCE) == 1 {
+            *cell = rand::random();
+        }
     }
 }
 
