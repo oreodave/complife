@@ -128,18 +128,22 @@ fn choose_unreserved_neighbours(
     let x = a % SIMULATION_ROW_SIZE;
     let y = a / SIMULATION_ROW_SIZE;
 
-    let mut neighbours = [0; 8];
+    let mut neighbours = [0; 12];
     let mut count = 0;
 
     for (dx, dy) in [
         (-1, -1),
-        (0, -1),
         (1, -1),
-        (-1, 0),
-        (1, 0),
         (-1, 1),
-        (0, 1),
         (1, 1),
+        (0, -1),
+        (0, -2),
+        (-1, 0),
+        (-2, 0),
+        (1, 0),
+        (2, 0),
+        (0, 1),
+        (0, 2),
     ] {
         if let (Some(nx), Some(ny)) =
             (x.checked_add_signed(dx), y.checked_add_signed(dy))
