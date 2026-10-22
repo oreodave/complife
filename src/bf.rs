@@ -92,7 +92,7 @@ struct Machine<'a> {
     loop_stack: Vec<usize>,
 }
 
-impl<'a> Machine<'a> {
+impl Machine<'_> {
     /// Execute a single operation within the [`Machine::tape`].
     fn exec_once(&mut self) {
         let Some(opcode) = self.tape.get(self.ip) else {
@@ -179,7 +179,7 @@ impl<'a> Machine<'a> {
                 '[' => loops += 1,
                 ']' => loops -= 1,
                 _ => {}
-            };
+            }
 
             if loops == 0 {
                 close_ip = pos_ip;

@@ -108,7 +108,7 @@ impl Window {
         unsafe { GetMousePosition() }
     }
 
-    pub fn draw(&self, camera: Camera2D) -> Canvas<'_> {
+    pub const fn draw(&self, camera: Camera2D) -> Canvas<'_> {
         Canvas(self, camera)
     }
 }
@@ -163,7 +163,7 @@ impl Drop for Window {
     }
 }
 
-impl<'a> Drop for Canvas<'a> {
+impl Drop for Canvas<'_> {
     fn drop(&mut self) {
         unsafe { EndMode2D() };
         unsafe { EndDrawing() };
