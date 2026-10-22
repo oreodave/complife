@@ -13,8 +13,18 @@ pub struct State {
 
 impl State {
     pub fn new() -> Self {
+        const POSSIBLE: [char; 10] =
+            ['<', '>', '{', '}', '-', '+', '.', ',', '[', ']'];
         let mut tokens = vec![0; SIMULATION_SIZE];
-        rand::fill(&mut tokens[..]);
+        for token in &mut tokens {
+            let choice = rand::random_range(0..11);
+            if choice == 10 {
+                *token = rand::random();
+            } else {
+                *token = POSSIBLE[choice] as u8;
+            }
+        }
+        // rand::fill(&mut tokens[..]);
         let data = tokens.into_boxed_slice();
 
         Self {
