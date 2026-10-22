@@ -8,6 +8,7 @@ mod sim;
 use crate::{
     constants::{HEIGHT, WIDTH},
     raylib::*,
+    sim::Simulation,
 };
 
 fn main() {
@@ -21,9 +22,11 @@ fn main() {
         zoom: 1.0,
     };
 
+    let mut sim = Simulation::new();
+
     while !window.should_close() {
         let canvas = window.draw(camera);
         canvas.clear_background(BLACK);
-        canvas.draw_text("Hello!", 20, 20, 100, WHITE);
+        sim.draw(&canvas);
     }
 }
