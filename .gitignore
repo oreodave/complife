@@ -3,3 +3,8 @@
 compile_commands.json
 /TAGS
 /.gdb_history
+
+
+# Added by cargo
+
+/target
