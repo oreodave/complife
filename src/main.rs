@@ -26,6 +26,7 @@ fn main() {
 
     while !window.should_close() {
         sim.mutate();
+        sim.step();
         let canvas = window.draw(camera);
         canvas.clear_background(BLACK);
         sim.draw(&canvas);

@@ -1,7 +1,7 @@
 //! Complete program simulation.
 
 use crate::{
-    bf::Token,
+    bf::{Program, Token},
     constants::{
         CELL_DIMENSIONS, MUTATION_CHANCE, NUM_PROGRAMS, PROGRAM_ROW_SIZE,
         PROGRAM_SIZE, SIMULATION_ROW_SIZE, SIMULATION_SIZE,
@@ -18,8 +18,9 @@ pub struct Simulation {
 impl Simulation {
     /// Construct a new [`Simulation`].
     pub fn new() -> Self {
-        let mut tokens = vec![0; SIMULATION_SIZE].into_boxed_slice();
-        rand::fill(&mut tokens[..]);
+        let mut tokens = vec![0; SIMULATION_SIZE];
+        rand::fill(&mut tokens);
+        let tokens = tokens.into_boxed_slice();
         Self { tokens }
     }
 
@@ -32,6 +33,18 @@ impl Simulation {
                 *cell = rand::random();
             }
         }
+    }
+
+    pub fn step(&mut self) {
+        let a = rand::random_range(0..NUM_PROGRAMS);
+        let b = random_neighbour(a);
+
+        // Concatenate.
+        let mut program = Program::new(a, b, self);
+        // Execute.
+        program.execute();
+        // Split.
+        program.finish(self);
     }
 
     pub fn draw(&self, canvas: &Canvas) {
@@ -84,4 +97,42 @@ const fn cell_color(cell: Token) -> Color {
         ']' => color(250, 190, 212),
         _ => color(0, 0, 0),
     }
+}
+
+fn random_other_cell(a: usize) -> usize {
+    let mut b = rand::random_range(0..NUM_PROGRAMS);
+    while b == a {
+        b = rand::random_range(0..NUM_PROGRAMS);
+    }
+    b
+}
+
+fn random_neighbour(a: usize) -> usize {
+    let x = a % SIMULATION_ROW_SIZE;
+    let y = a % SIMULATION_ROW_SIZE;
+
+    let mut neighbours = [0; 8];
+    let mut count = 0;
+
+    for (dx, dy) in [
+        (-1, -1),
+        (0, -1),
+        (1, -1),
+        (-1, 0),
+        (1, 0),
+        (-1, 1),
+        (0, 1),
+        (1, 1),
+    ] {
+        if let (Some(nx), Some(ny)) =
+            (x.checked_add_signed(dx), y.checked_add_signed(dy))
+        {
+            if nx < SIMULATION_ROW_SIZE && ny < SIMULATION_ROW_SIZE {
+                neighbours[count] = (nx * SIMULATION_ROW_SIZE) + ny;
+                count += 1;
+            }
+        }
+    }
+
+    neighbours[rand::random_range(0..count)]
 }
