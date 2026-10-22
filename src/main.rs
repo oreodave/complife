@@ -2,6 +2,7 @@
 
 mod constants;
 mod raylib;
+mod sim;
 
 use crate::{
     constants::{HEIGHT, WIDTH},
