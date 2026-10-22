@@ -102,36 +102,36 @@ impl Machine<'_> {
         // Look at the paper for how I derived these encodings.
         match *opcode as char {
             '<' => {
-                self.head_0 -= 1;
+                self.head_0.wrapping_sub_signed(1);
                 self.head_0 %= self.tape.len();
                 self.ip += 1;
             }
 
             '>' => {
-                self.head_0 += 1;
+                self.head_0.wrapping_add(1);
                 self.head_0 %= self.tape.len();
                 self.ip += 1;
             }
 
             '{' => {
-                self.head_1 -= 1;
+                self.head_1.wrapping_sub_signed(1);
                 self.head_1 %= self.tape.len();
                 self.ip += 1;
             }
 
             '}' => {
-                self.head_1 += 1;
+                self.head_1.wrapping_add(1);
                 self.head_1 %= self.tape.len();
                 self.ip += 1;
             }
 
             '-' => {
-                self.tape[self.head_0] -= 1;
+                self.tape[self.head_0].wrapping_sub_signed(1);
                 self.ip += 1;
             }
 
             '+' => {
-                self.tape[self.head_0] += 1;
+                self.tape[self.head_0].wrapping_add(1);
                 self.ip += 1;
             }
 
