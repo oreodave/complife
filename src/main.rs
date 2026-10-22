@@ -29,11 +29,15 @@ use crate::{
     workers::{mutate, work_once},
 };
 
+pub const MOVEMENT_SPEED: f32 = 5.0;
+pub const ZOOM_SPEED: f32 = 0.1;
+pub const ZOOM_MAX: f32 = 5.0;
+
 fn main() {
     let window = Window::new(WIDTH, HEIGHT, 60, "Hello, world!")
         .expect("Fix your stuff innit.");
 
-    let camera = Camera2D {
+    let mut camera = Camera2D {
         offset: Vector2::default(),
         target: Vector2::default(),
         rotation: 0.0,
@@ -89,8 +93,40 @@ fn main() {
 
         while !window.should_close() {
             if window.key_pressed(KEY_SPACE) {
-                paused
-                    .store(!paused.load(Ordering::Relaxed), Ordering::Relaxed);
+                let invert = !paused.load(Ordering::Relaxed);
+                paused.store(invert, Ordering::Relaxed);
+            }
+
+            if window.key_down(KEY_W) {
+                camera.target.y -= MOVEMENT_SPEED;
+            }
+
+            if window.key_down(KEY_S) {
+                camera.target.y += MOVEMENT_SPEED;
+            }
+
+            if window.key_down(KEY_A) {
+                camera.target.x -= MOVEMENT_SPEED;
+            }
+
+            if window.key_down(KEY_D) {
+                camera.target.x += MOVEMENT_SPEED;
+            }
+
+            if window.key_pressed(KEY_Z) {
+                camera.zoom += ZOOM_SPEED;
+                camera.zoom = camera.zoom.clamp(1.0, ZOOM_MAX);
+            }
+
+            if window.key_pressed(KEY_X) {
+                camera.zoom -= ZOOM_SPEED;
+                camera.zoom = camera.zoom.clamp(1.0, ZOOM_MAX);
+            }
+
+            if window.key_pressed(KEY_PERIOD) {
+                camera.offset = Vector2::default();
+                camera.target = Vector2::default();
+                camera.zoom = 1.0;
             }
 
             {
@@ -103,6 +139,7 @@ fn main() {
             render_tokens(&display_tokens, &canvas);
         }
 
+        paused.store(false, Ordering::Relaxed);
         alive.store(false, Ordering::Relaxed);
     });
 }
