@@ -1,6 +1,6 @@
 //! Main entrypoint program.
 
-#[allow(dead_code)]
+#[allow(dead_code, clippy::pedantic)]
 mod raylib;
 
 mod bf;
@@ -115,6 +115,7 @@ fn render_tokens(tokens: &[Token], canvas: &Canvas) {
         // Translate to cells.
         let program_origin = program_origin * program_row_size;
 
+        // Draw each cell individually
         for (j, cell) in program.iter().enumerate() {
             // Compute the coordinates of this cell within the program square.
             let cell_origin = Vector2::new(

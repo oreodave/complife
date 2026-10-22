@@ -71,8 +71,6 @@ pub fn work_once(state: &Mutex<State>, changed: &Condvar) {
     changed.notify_all();
 }
 
-const POSSIBLE: [char; 10] = ['<', '>', '{', '}', '-', '+', '.', ',', '[', ']'];
-
 pub fn mutate(state: &Mutex<State>, changed: &Condvar) {
     if MUTATION_CHANCE == 0 {
         return;

@@ -9,7 +9,7 @@ use crate::constants::{NUM_PROGRAMS, PROGRAM_MAX_ITERS, PROGRAM_SIZE};
 
 pub type Token = u8;
 
-/// Identifier for a program.  These must be in the range (0..NUM_PROGRAMS).
+/// Identifier for a program.  These must be in the range `(0..NUM_PROGRAMS)`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ProgramId(usize);
 
@@ -19,7 +19,7 @@ impl ProgramId {
         Self(n)
     }
 
-    pub fn cell_range(self) -> std::ops::Range<usize> {
+    pub const fn cell_range(self) -> std::ops::Range<usize> {
         let start = self.0 * PROGRAM_SIZE;
         start..start + PROGRAM_SIZE
     }
@@ -171,7 +171,7 @@ impl Machine<'_> {
 
     fn loop_begin(&mut self) {
         // If this loop IP is not already present in the loop stack, add it.
-        if self.loop_stack.iter().find(|&&x| x == self.ip).is_none() {
+        if !self.loop_stack.iter().any(|&x| x == self.ip) {
             self.loop_stack.push(self.ip);
         }
 
