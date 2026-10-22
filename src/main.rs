@@ -1,10 +1,15 @@
-use crate::raylib::*;
+//! Main entrypoint program.
 
+mod constants;
 mod raylib;
 
+use crate::{
+    constants::{HEIGHT, WIDTH},
+    raylib::*,
+};
+
 fn main() {
-    let window = Window::new(800, 600, 60, "Hello, world!")
-        .expect("Fix your stuff init.");
+    let window = Window::new(WIDTH, HEIGHT, 60, "Hello, world!")
         .expect("Fix your stuff innit.");
 
     let camera = Camera2D {
