@@ -129,8 +129,8 @@ impl Window {
         unsafe { GetMousePosition() }
     }
 
-    pub const fn draw(&self, camera: Camera2D) -> Canvas<'_> {
-        Canvas(self, camera)
+    pub fn draw(&self, camera: Camera2D) -> Canvas<'_> {
+        Canvas::new(self, camera)
     }
 }
 
