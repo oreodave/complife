@@ -99,36 +99,37 @@ impl Machine<'_> {
         // Look at the paper for how I derived these encodings.
         match *opcode as char {
             '<' => {
-                self.head_0.wrapping_sub_signed(1);
+                self.head_0 = self.head_0.wrapping_sub_signed(1);
                 self.head_0 %= self.tape.len();
                 self.ip += 1;
             }
 
             '>' => {
-                self.head_0.wrapping_add(1);
+                self.head_0 = self.head_0.wrapping_add(1);
                 self.head_0 %= self.tape.len();
                 self.ip += 1;
             }
 
             '{' => {
-                self.head_1.wrapping_sub_signed(1);
+                self.head_1 = self.head_1.wrapping_sub_signed(1);
                 self.head_1 %= self.tape.len();
                 self.ip += 1;
             }
 
             '}' => {
-                self.head_1.wrapping_add(1);
+                self.head_1 = self.head_1.wrapping_add(1);
                 self.head_1 %= self.tape.len();
                 self.ip += 1;
             }
 
             '-' => {
-                self.tape[self.head_0].wrapping_sub_signed(1);
+                self.tape[self.head_0] =
+                    self.tape[self.head_0].wrapping_sub_signed(1);
                 self.ip += 1;
             }
 
             '+' => {
-                self.tape[self.head_0].wrapping_add(1);
+                self.tape[self.head_0] = self.tape[self.head_0].wrapping_add(1);
                 self.ip += 1;
             }
 
@@ -158,7 +159,7 @@ impl Machine<'_> {
 
     fn loop_begin(&mut self) {
         // If this loop IP is not already present in the loop stack, add it.
-        if self.loop_stack.iter().find(|&&x| x == self.ip).is_some() {
+        if self.loop_stack.iter().find(|&&x| x == self.ip).is_none() {
             self.loop_stack.push(self.ip);
         }
 
@@ -170,7 +171,7 @@ impl Machine<'_> {
 
         // Otherwise, attempt to look for the IP of the matching close loop.
         let mut loops = 1;
-        let mut close_ip = self.ip + 1;
+        let mut close_ip = 0;
         for (pos_ip, pos_loop) in self.tape[self.ip + 1..].iter().enumerate() {
             match *pos_loop as char {
                 '[' => loops += 1,
@@ -179,7 +180,7 @@ impl Machine<'_> {
             }
 
             if loops == 0 {
-                close_ip = pos_ip;
+                close_ip = pos_ip + self.ip + 2;
                 break;
             }
         }
