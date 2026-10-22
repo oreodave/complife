@@ -8,16 +8,24 @@ mod constants;
 mod state;
 mod workers;
 
-use std::sync::Mutex;
+use std::{
+    sync::{
+        Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread,
+    time::{Duration, Instant},
+};
 
 use crate::{
     bf::{ProgramId, Token},
     constants::{
-        CELL_DIMENSIONS, HEIGHT, NUM_PROGRAMS, PROGRAM_ROW_SIZE,
-        SIMULATION_ROW_SIZE, SIMULATION_SIZE, WIDTH,
+        CELL_DIMENSIONS, HEIGHT, MUTATION_CHANCE, NUM_PROGRAMS,
+        PROGRAM_ROW_SIZE, SIMULATION_ROW_SIZE, SIMULATION_SIZE, WIDTH,
     },
     raylib::*,
     state::State,
+    workers::{mutate, work_once},
 };
 
 fn main() {
@@ -31,25 +39,64 @@ fn main() {
         zoom: 1.0,
     };
 
-    let mut state: Mutex<State> = Mutex::new(State::new());
-    let mut display_tokens = [0; SIMULATION_SIZE];
+    // Workers and generalised shared state
+    let state: Mutex<State> = Mutex::new(State::new());
+    let alive = AtomicBool::new(true);
+    let worker_count = 4;
+    let mut display_tokens = vec![0; SIMULATION_SIZE];
 
-    while !window.should_close() {
-        workers::work_once(&mut state);
+    println!(
+        "Spawning {} workers and 1 mutator thread.",
+        worker_count - 1
+    );
 
-        // Make a local copy after locking the mutex to avoid r/w data races.
-        {
-            let mut state = state.lock().unwrap();
-            display_tokens.copy_from_slice(&state.data);
+    thread::scope(|scope| {
+        if MUTATION_CHANCE > 0 {
+            scope.spawn(|| {
+                let delta = Duration::from_millis(1000);
+                let mut next = Instant::now() + delta;
+                while alive.load(Ordering::Relaxed) {
+                    thread::sleep(
+                        next.saturating_duration_since(Instant::now()),
+                    );
+                    if !alive.load(Ordering::Relaxed) {
+                        break;
+                    }
+
+                    mutate(&state);
+                    next += delta;
+                }
+            });
         }
 
-        let canvas = window.draw(camera);
-        canvas.clear_background(BLACK);
-        render_tokens(&display_tokens, &canvas);
-    }
+        for _ in 0..(worker_count - 1) {
+            scope.spawn(|| {
+                while alive.load(Ordering::Relaxed) {
+                    work_once(&state);
+                }
+            });
+        }
+
+        while !window.should_close() {
+            // Make a local copy after locking the mutex to avoid r/w data
+            // races.
+            {
+                let state = state.lock().unwrap();
+                display_tokens.copy_from_slice(&state.data);
+            }
+
+            let canvas = window.draw(camera);
+            canvas.clear_background(BLACK);
+            render_tokens(&display_tokens, &canvas);
+        }
+
+        alive.store(false, Ordering::Relaxed);
+    });
 }
 
 fn render_tokens(tokens: &[Token], canvas: &Canvas) {
+    let program_row_size =
+        Vector2::new(PROGRAM_ROW_SIZE as f32, PROGRAM_ROW_SIZE as f32);
     for i in 0..NUM_PROGRAMS {
         // A program is simply a contiguous block within the token stream; get
         // it.
@@ -63,8 +110,7 @@ fn render_tokens(tokens: &[Token], canvas: &Canvas) {
         );
 
         // Translate to cells.
-        let program_origin = program_origin
-            * Vector2::new(PROGRAM_ROW_SIZE as f32, PROGRAM_ROW_SIZE as f32);
+        let program_origin = program_origin * program_row_size;
 
         for (j, cell) in program.iter().enumerate() {
             // Compute the coordinates of this cell within the program square.
@@ -87,22 +133,21 @@ fn render_tokens(tokens: &[Token], canvas: &Canvas) {
             );
         }
 
-        // // Draw grid lines to split up programs easily.
+        // Draw grid lines to split up programs easily.
 
-        // let origin = Vector2::new(s_x as f32, s_y as f32) * CELL_DIMENSIONS;
-        // let dimensions = CELL_DIMENSIONS
-        //     * Vector2::new(PROGRAM_ROW_SIZE as f32, PROGRAM_ROW_SIZE as f32);
+        let origin = program_origin * CELL_DIMENSIONS;
+        let dimensions = CELL_DIMENSIONS * program_row_size;
 
-        // canvas.draw_rectangle_lines_ex(
-        //     Rectangle {
-        //         x: origin.x,
-        //         y: origin.y,
-        //         width: dimensions.x,
-        //         height: dimensions.y,
-        //     },
-        //     CELL_DIMENSIONS.x / (PROGRAM_ROW_SIZE as f32),
-        //     DARKGRAY,
-        // );
+        canvas.draw_rectangle_lines_ex(
+            Rectangle {
+                x: origin.x,
+                y: origin.y,
+                width: dimensions.x,
+                height: dimensions.y,
+            },
+            CELL_DIMENSIONS.x / (PROGRAM_ROW_SIZE as f32),
+            DARKGRAY,
+        );
     }
 }
 
