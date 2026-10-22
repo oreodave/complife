@@ -2,7 +2,7 @@
 
 use crate::{
     bf::Token,
-    constants::{NUM_PROGRAMS, SIMULATION_SIZE},
+    constants::{INIT_RANDOM_SOUP, NUM_PROGRAMS, SIMULATION_SIZE},
 };
 
 pub struct State {
@@ -14,10 +14,14 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         let mut tokens = vec![0; SIMULATION_SIZE];
-        for token in &mut tokens {
-            *token = biased_random_token();
+
+        if INIT_RANDOM_SOUP {
+            for token in &mut tokens {
+                *token = biased_random_token();
+            }
+            rand::fill(&mut tokens[..]);
         }
-        // rand::fill(&mut tokens[..]);
+
         let data = tokens.into_boxed_slice();
 
         Self {

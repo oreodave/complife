@@ -44,3 +44,6 @@ pub const MUTATION_CHANCE: usize = SIMULATION_SIZE;
 
 /// Number of parallel workers that can perform reactions.
 pub const WORKER_COUNT: usize = 7;
+
+/// Choice to randomise the initial "soup" when first starting simulation.
+pub const INIT_RANDOM_SOUP: bool = false;
