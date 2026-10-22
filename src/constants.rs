@@ -9,8 +9,8 @@ pub const WIDTH: i32 = 1024;
 /// Window height.
 pub const HEIGHT: i32 = 1024;
 
-const PROGRAM_SIZE_POW_2: usize = 8;
-const NUM_PROGRAMS_POW_2: usize = 8;
+const PROGRAM_SIZE_POW_2: usize = 6;
+const NUM_PROGRAMS_POW_2: usize = 12;
 
 /// Size of an individual program.
 pub const PROGRAM_SIZE: usize = 1 << PROGRAM_SIZE_POW_2;

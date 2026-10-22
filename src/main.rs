@@ -136,22 +136,6 @@ fn render_tokens(tokens: &[Token], canvas: &Canvas) {
                 cell_color(*cell),
             );
         }
-
-        // Draw grid lines to split up programs easily.
-
-        let origin = program_origin * CELL_DIMENSIONS;
-        let dimensions = CELL_DIMENSIONS * program_row_size;
-
-        canvas.draw_rectangle_lines_ex(
-            Rectangle {
-                x: origin.x,
-                y: origin.y,
-                width: dimensions.x,
-                height: dimensions.y,
-            },
-            CELL_DIMENSIONS.x / (PROGRAM_ROW_SIZE as f32),
-            DARKGRAY,
-        );
     }
 }
 
